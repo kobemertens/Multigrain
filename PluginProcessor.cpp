@@ -161,7 +161,8 @@ bool AudioPluginAudioProcessor::hasEditor() const
 
 juce::AudioProcessorEditor* AudioPluginAudioProcessor::createEditor()
 {
-    return new AudioPluginAudioProcessorEditor (*this);
+    // return new AudioPluginAudioProcessorEditor (*this);
+    return new juce::GenericAudioProcessorEditor(*this);
 }
 
 //==============================================================================
@@ -178,6 +179,28 @@ void AudioPluginAudioProcessor::setStateInformation (const void* data, int sizeI
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
     juce::ignoreUnused (data, sizeInBytes);
+}
+
+juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::createParameterLayout()
+{
+    juce::AudioProcessorValueTreeState::ParameterLayout layout;
+
+    layout.add(std::make_unique<juce::AudioParameterFloat>("Grain Rate", 
+                                                           "Grain Rate", 
+                                                           juce::NormalisableRange<float>(.1f, 4.f, .1f, 1.f), 
+                                                           .2f));
+    
+    layout.add(std::make_unique<juce::AudioParameterFloat>("Grain Duration", 
+                                                           "Grain Duration", 
+                                                           juce::NormalisableRange<float>(.1f, 4.f, .1f, 1.f), 
+                                                           .2f));
+
+    layout.add(std::make_unique<juce::AudioParameterFloat>("Position", 
+                                                           "Position", 
+                                                           juce::NormalisableRange<float>(0.f, 1.f, .01f, 1.f), 
+                                                           0.f));
+
+    return layout;
 }
 
 //==============================================================================
