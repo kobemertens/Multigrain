@@ -10,8 +10,10 @@ AudioPluginAudioProcessor::AudioPluginAudioProcessor()
                       #endif
                        .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
                      #endif
-                       )
+                       ),
+      position(0)
 {
+    fileBuffer.setSize(2, 0);
 }
 
 AudioPluginAudioProcessor::~AudioPluginAudioProcessor()
@@ -90,7 +92,7 @@ void AudioPluginAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     // initialisation that you need..
     juce::ignoreUnused (sampleRate, samplesPerBlock);
 
-    gs.prepareToPlay(samplesPerBlock, sampleRate);
+    grainScheduler.prepareToPlay(samplesPerBlock, sampleRate);
 }
 
 void AudioPluginAudioProcessor::releaseResources()
@@ -98,7 +100,7 @@ void AudioPluginAudioProcessor::releaseResources()
     // When playback stops, you can use this as an opportunity to free up any
     // spare memory, etc.
 
-    gs.releaseResources();
+    grainScheduler.releaseResources();
 }
 
 bool AudioPluginAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
@@ -134,25 +136,46 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
 
-    // In case we have more outputs than inputs, this code clears any output
-    // channels that didn't contain input data, (because these aren't
-    // guaranteed to be empty - they may contain garbage).
-    // This is here to avoid people getting screaming feedback
-    // when they first compile a plugin, but obviously you don't need to keep
-    // this code if your algorithm always overwrites all the output channels.
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-    // for (int channel = 0; channel < totalNumInputChannels; ++channel)
-    // {
-    //     auto* channelData = buffer.getWritePointer (channel);
-    //     juce::ignoreUnused (channelData);
-    //     // ..do something to the data...
-    // }
-
     // TODO: Maybe create a single audiosourcechannelinfo and reuse it
     juce::AudioSourceChannelInfo ci (buffer);
-    gs.getNextAudioBlock(ci);
+    grainScheduler.getNextAudioBlock(ci);
+
+    // the buffer is empty
+    if (fileBuffer.getNumSamples() == 0)
+    {
+        return;
+    }
+
+    auto outputSamplesRemaining = buffer.getNumSamples();
+    auto outputSamplesOffset = 0;
+
+    while (outputSamplesRemaining > 0)
+    {
+        auto bufferSamplesRemaining = fileBuffer.getNumSamples() - position;
+        auto samplesThisTime = juce::jmin(outputSamplesRemaining, bufferSamplesRemaining);
+
+        for (auto channel = 0; channel < buffer.getNumChannels(); ++channel)
+        {
+            buffer.copyFrom(
+                channel,
+                0,
+                fileBuffer,
+                channel % fileBuffer.getNumChannels(),
+                position,
+                samplesThisTime
+            );
+        }
+
+        outputSamplesRemaining -= samplesThisTime;
+        outputSamplesOffset += samplesThisTime;
+        position += samplesThisTime;
+
+        if (position == fileBuffer.getNumSamples())
+            position = 0;
+    }
 }
 
 //==============================================================================

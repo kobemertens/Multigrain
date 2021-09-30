@@ -87,7 +87,7 @@ void AudioPluginAudioProcessorEditor::filesDropped(const juce::StringArray &file
             auto duration = (float) reader->lengthInSamples / reader->sampleRate;
             if (duration < 10)
             {
-                auto fileBuffer = processorRef.getFileBuffer();
+                auto& fileBuffer = processorRef.getFileBuffer();
                 fileBuffer.setSize((int) reader->numChannels, (int) reader->lengthInSamples);
                 reader->read(&fileBuffer,
                              0,

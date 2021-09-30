@@ -51,8 +51,8 @@ public:
 
 private:
     //==============================================================================
-    GrainScheduler gs;
+    GrainScheduler grainScheduler;
     juce::AudioSampleBuffer fileBuffer;
-    unsigned int position = 0;
+    int position;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessor)
 };
