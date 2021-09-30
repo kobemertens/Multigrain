@@ -17,6 +17,8 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     }
 
     setSize (600, 400);
+
+    formatManager.registerBasicFormats();
 }
 
 AudioPluginAudioProcessorEditor::~AudioPluginAudioProcessorEditor()
@@ -59,4 +61,51 @@ std::vector<juce::Component*> AudioPluginAudioProcessorEditor::getComps()
         &grainDurationSlider,
         &positionSlider
     };
+}
+
+bool AudioPluginAudioProcessorEditor::isInterestedInFileDrag(const juce::StringArray &files)
+{
+    return true;
+}
+
+void AudioPluginAudioProcessorEditor::fileDragEnter (const juce::StringArray &files, int x, int y){}
+
+void AudioPluginAudioProcessorEditor::fileDragMove (const juce::StringArray &files, int x, int y){}
+
+void AudioPluginAudioProcessorEditor::fileDragExit (const juce::StringArray &files){}
+
+void AudioPluginAudioProcessorEditor::filesDropped(const juce::StringArray &files, int x, int y)
+{
+    for (auto string : files)
+    {
+        std::cout << string << std::endl;
+        auto file = juce::File(string);
+        std::unique_ptr<juce::AudioFormatReader> reader (formatManager.createReaderFor(file));
+        if (reader.get() != nullptr)
+        {
+            std::cout << "Reader created!" << std::endl;
+            auto duration = (float) reader->lengthInSamples / reader->sampleRate;
+            if (duration < 10)
+            {
+                auto fileBuffer = processorRef.getFileBuffer();
+                fileBuffer.setSize((int) reader->numChannels, (int) reader->lengthInSamples);
+                reader->read(&fileBuffer,
+                             0,
+                             (int) reader->lengthInSamples,
+                             0,
+                             true,
+                             true);
+            }
+            else
+            {
+                // TODO: handle the error that the file is 10 seconds or longer..
+            }
+        }
+        else
+        {
+            // TODO: display error message here
+            std::cout << "No reader created!" << std::endl;
+        }
+    }
+    
 }
