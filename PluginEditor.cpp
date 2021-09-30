@@ -3,7 +3,10 @@
 
 //==============================================================================
 AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAudioProcessor& p)
-    : AudioProcessorEditor (&p), processorRef (p)
+    : AudioProcessorEditor (&p), processorRef (p),
+    grainRateSliderAttachment(processorRef.apvts, "Grain Rate", grainRateSlider),
+    grainDurationSliderAttachment(processorRef.apvts, "Grain Duration", grainDurationSlider),
+    positionSliderAttachment(processorRef.apvts, "Position", positionSlider)
 {
     juce::ignoreUnused (processorRef);
     // Make sure that before the constructor has finished, you've set the
