@@ -8,7 +8,12 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     juce::ignoreUnused (processorRef);
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
-    setSize (400, 300);
+    for (auto* comp : getComps())
+    {
+        addAndMakeVisible(comp);
+    }
+
+    setSize (600, 400);
 }
 
 AudioPluginAudioProcessorEditor::~AudioPluginAudioProcessorEditor()
@@ -30,4 +35,25 @@ void AudioPluginAudioProcessorEditor::resized()
 {
     // This is generally where you'll want to lay out the positions of any
     // subcomponents in your editor..
+
+    auto bounds = getLocalBounds();
+    auto waveFormArea = bounds.removeFromTop(bounds.getHeight() * 0.33);
+
+    auto grainRateArea = bounds.removeFromLeft(bounds.getWidth() * 0.33);
+    auto grainDurationArea = bounds.removeFromLeft(bounds.getWidth() * 0.5);
+    auto durationArea = bounds;
+
+    grainRateSlider.setBounds(grainRateArea);
+    grainDurationSlider.setBounds(grainDurationArea);
+    positionSlider.setBounds(durationArea);
+}
+
+std::vector<juce::Component*> AudioPluginAudioProcessorEditor::getComps()
+{
+    return
+    {
+        &grainRateSlider,
+        &grainDurationSlider,
+        &positionSlider
+    };
 }

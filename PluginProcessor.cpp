@@ -89,12 +89,16 @@ void AudioPluginAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
     juce::ignoreUnused (sampleRate, samplesPerBlock);
+
+    gs.prepareToPlay(samplesPerBlock, sampleRate);
 }
 
 void AudioPluginAudioProcessor::releaseResources()
 {
     // When playback stops, you can use this as an opportunity to free up any
     // spare memory, etc.
+
+    gs.releaseResources();
 }
 
 bool AudioPluginAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
@@ -145,12 +149,16 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     // the samples and the outer loop is handling the channels.
     // Alternatively, you can process the samples with the channels
     // interleaved by keeping the same state.
-    for (int channel = 0; channel < totalNumInputChannels; ++channel)
-    {
-        auto* channelData = buffer.getWritePointer (channel);
-        juce::ignoreUnused (channelData);
-        // ..do something to the data...
-    }
+    // for (int channel = 0; channel < totalNumInputChannels; ++channel)
+    // {
+    //     auto* channelData = buffer.getWritePointer (channel);
+    //     juce::ignoreUnused (channelData);
+    //     // ..do something to the data...
+    // }
+
+    // TODO: Maybe create a single audiosourcechannelinfo and reuse it
+    juce::AudioSourceChannelInfo ci (buffer);
+    gs.getNextAudioBlock(ci);
 }
 
 //==============================================================================
@@ -161,8 +169,8 @@ bool AudioPluginAudioProcessor::hasEditor() const
 
 juce::AudioProcessorEditor* AudioPluginAudioProcessor::createEditor()
 {
-    // return new AudioPluginAudioProcessorEditor (*this);
-    return new juce::GenericAudioProcessorEditor(*this);
+    return new AudioPluginAudioProcessorEditor (*this);
+    // return new juce::GenericAudioProcessorEditor(*this);
 }
 
 //==============================================================================
@@ -188,12 +196,12 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
     layout.add(std::make_unique<juce::AudioParameterFloat>("Grain Rate", 
                                                            "Grain Rate", 
                                                            juce::NormalisableRange<float>(.1f, 4.f, .1f, 1.f), 
-                                                           .2f));
+                                                           .5f));
     
     layout.add(std::make_unique<juce::AudioParameterFloat>("Grain Duration", 
                                                            "Grain Duration", 
                                                            juce::NormalisableRange<float>(.1f, 4.f, .1f, 1.f), 
-                                                           .2f));
+                                                           1.f));
 
     layout.add(std::make_unique<juce::AudioParameterFloat>("Position", 
                                                            "Position", 
