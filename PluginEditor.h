@@ -1,6 +1,7 @@
 #pragma once
 
 #include <juce_audio_formats/juce_audio_formats.h>
+#include <juce_audio_utils/juce_audio_utils.h>
 
 #include "PluginProcessor.h"
 
@@ -35,10 +36,18 @@ private:
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
     AudioPluginAudioProcessor& processorRef;
-
+    
+    // --------------------------------------------------------------
+    // Components (dont forget to add to getComps)
+    // --------------------------------------------------------------
     CustomRotarySlider grainRateSlider,
                        grainDurationSlider,
                        positionSlider;
+
+    juce::MidiKeyboardComponent keyboardComponent;
+
+    std::vector<juce::Component*> getComps();
+    // ---------------------------------------------------------------
 
     using APVTS = juce::AudioProcessorValueTreeState;
     using Attachment = APVTS::SliderAttachment;
@@ -47,7 +56,6 @@ private:
                grainDurationSliderAttachment,
                positionSliderAttachment;
 
-    std::vector<juce::Component*> getComps();
 
     juce::AudioFormatManager formatManager;
 

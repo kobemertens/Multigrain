@@ -48,11 +48,13 @@ public:
     juce::AudioProcessorValueTreeState apvts {*this, nullptr, "Parameters", createParameterLayout()};
 
     juce::AudioSampleBuffer& getFileBuffer();
+    juce::MidiKeyboardState keyboardState;
 
 private:
     //==============================================================================
     GrainScheduler grainScheduler;
     juce::AudioSampleBuffer fileBuffer;
     int position;
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessor)
 };
