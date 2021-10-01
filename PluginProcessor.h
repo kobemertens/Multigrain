@@ -2,7 +2,7 @@
 
 #include <juce_audio_processors/juce_audio_processors.h>
 
-#include "GrainScheduler.h"
+#include "SynthAudioSource.h"
 
 //==============================================================================
 class AudioPluginAudioProcessor  : public juce::AudioProcessor
@@ -52,7 +52,7 @@ public:
 
 private:
     //==============================================================================
-    GrainScheduler grainScheduler;
+    SynthAudioSource synthAudioSource;
     juce::AudioSampleBuffer fileBuffer;
     int position;
 

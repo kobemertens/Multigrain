@@ -11,7 +11,8 @@ AudioPluginAudioProcessor::AudioPluginAudioProcessor()
                        .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
                      #endif
                        ),
-      position(0)
+      position(0),
+      synthAudioSource(keyboardState)
 {
     fileBuffer.setSize(2, 0);
 }
@@ -92,7 +93,7 @@ void AudioPluginAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     // initialisation that you need..
     juce::ignoreUnused (sampleRate, samplesPerBlock);
 
-    grainScheduler.prepareToPlay(samplesPerBlock, sampleRate);
+    synthAudioSource.prepareToPlay(samplesPerBlock, sampleRate);
 }
 
 void AudioPluginAudioProcessor::releaseResources()
@@ -100,7 +101,7 @@ void AudioPluginAudioProcessor::releaseResources()
     // When playback stops, you can use this as an opportunity to free up any
     // spare memory, etc.
 
-    grainScheduler.releaseResources();
+    synthAudioSource.releaseResources();
 }
 
 bool AudioPluginAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
@@ -130,7 +131,7 @@ bool AudioPluginAudioProcessor::isBusesLayoutSupported (const BusesLayout& layou
 void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
                                               juce::MidiBuffer& midiMessages)
 {
-    keyboardState.processNextMidiBuffer(midiMessages, 0, buffer.getNumSamples(), false);
+    // keyboardState.processNextMidiBuffer(midiMessages, 0, buffer.getNumSamples(), false);
 
 
     juce::ScopedNoDenormals noDenormals;
@@ -142,7 +143,7 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
 
     // TODO: Maybe create a single audiosourcechannelinfo and reuse it
     juce::AudioSourceChannelInfo ci (buffer);
-    grainScheduler.getNextAudioBlock(ci);
+    synthAudioSource.getNextAudioBlock(ci);
 
     // the buffer is empty
     if (fileBuffer.getNumSamples() == 0)
