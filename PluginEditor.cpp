@@ -7,7 +7,9 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     grainRateSliderAttachment(processorRef.apvts, "Grain Rate", grainRateSlider),
     grainDurationSliderAttachment(processorRef.apvts, "Grain Duration", grainDurationSlider),
     positionSliderAttachment(processorRef.apvts, "Position", positionSlider),
-    keyboardComponent(processorRef.keyboardState, juce::MidiKeyboardComponent::horizontalKeyboard)
+    keyboardComponent(processorRef.keyboardState, juce::MidiKeyboardComponent::horizontalKeyboard),
+    audioThumbnailCache(5),
+    audioThumbnail(512, formatManager, audioThumbnailCache)
 {
     for (auto* comp : getComps())
     {
@@ -17,10 +19,18 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     setSize (600, 400);
 
     formatManager.registerBasicFormats();
+    audioThumbnail.addChangeListener(this);
 }
 
 AudioPluginAudioProcessorEditor::~AudioPluginAudioProcessorEditor()
 {
+    audioThumbnail.removeChangeListener(this);
+    audioThumbnail.setSource(nullptr); // No idea why this is needed but does not work otherwise
+}
+
+void AudioPluginAudioProcessorEditor::changeListenerCallback(juce::ChangeBroadcaster* source)
+{
+    if (source == &audioThumbnail) repaint();
 }
 
 //==============================================================================
@@ -28,10 +38,37 @@ void AudioPluginAudioProcessorEditor::paint (juce::Graphics& g)
 {
     // (Our component is opaque, so we must completely fill the background with a solid colour)
     g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
+    auto bounds = getLocalBounds();
+    auto thumbnailBounds = bounds.removeFromTop(bounds.getHeight() * 0.5);
+    if (audioThumbnail.getNumChannels() == 0)
+        paintIfNoFileLoaded(g, thumbnailBounds);
+    else
+        paintIfFileLoaded(g, thumbnailBounds);
 
     // g.setColour (juce::Colours::white);
     // g.setFont (15.0f);
     // g.drawFittedText ("Hello World!", getLocalBounds(), juce::Justification::centred, 1);
+}
+
+void AudioPluginAudioProcessorEditor::paintIfNoFileLoaded (juce::Graphics& g, const juce::Rectangle<int>& thumbnailBounds)
+{
+    g.setColour(juce::Colours::darkgrey);
+    g.fillRect(thumbnailBounds);
+    g.setColour(juce::Colours::white);
+    g.drawFittedText("Drag .wav file here", thumbnailBounds, juce::Justification::centred, 1);
+}
+
+void AudioPluginAudioProcessorEditor::paintIfFileLoaded (juce::Graphics& g, const juce::Rectangle<int>& thumbnailBounds)
+{
+    g.setColour(juce::Colours::white);
+    g.fillRect(thumbnailBounds);
+    g.setColour(juce::Colours::black);
+
+    audioThumbnail.drawChannels(g,
+                                thumbnailBounds,
+                                0.0,
+                                audioThumbnail.getTotalLength(),
+                                1.0f);
 }
 
 void AudioPluginAudioProcessorEditor::resized()
@@ -94,6 +131,7 @@ void AudioPluginAudioProcessorEditor::filesDropped(const juce::StringArray &file
                              0,
                              true,
                              true);
+                audioThumbnail.setSource(new juce::FileInputSource(file));
             }
             else
             {

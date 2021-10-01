@@ -15,7 +15,9 @@ struct CustomRotarySlider : juce::Slider
 
 //==============================================================================
 class AudioPluginAudioProcessorEditor  : public juce::AudioProcessorEditor,
-                                         public juce::FileDragAndDropTarget
+                                         public juce::FileDragAndDropTarget,
+                                         private juce::ChangeListener
+                                         
 {
 public:
     explicit AudioPluginAudioProcessorEditor (AudioPluginAudioProcessor&);
@@ -33,6 +35,9 @@ public:
     void filesDropped(const juce::StringArray &files, int x, int y) override;
 
 private:
+    void changeListenerCallback(juce::ChangeBroadcaster* source) override;
+    void paintIfNoFileLoaded (juce::Graphics& g, const juce::Rectangle<int>& thumbnailBounds);
+    void paintIfFileLoaded (juce::Graphics& g, const juce::Rectangle<int>& thumbnailBounds);
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
     AudioPluginAudioProcessor& processorRef;
@@ -45,6 +50,7 @@ private:
                        positionSlider;
 
     juce::MidiKeyboardComponent keyboardComponent;
+    juce::AudioThumbnail audioThumbnail;
 
     std::vector<juce::Component*> getComps();
     // ---------------------------------------------------------------
@@ -58,6 +64,8 @@ private:
 
 
     juce::AudioFormatManager formatManager;
+
+    juce::AudioThumbnailCache audioThumbnailCache;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessorEditor)
 };
