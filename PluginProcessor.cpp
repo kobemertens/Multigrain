@@ -131,7 +131,7 @@ bool AudioPluginAudioProcessor::isBusesLayoutSupported (const BusesLayout& layou
 void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
                                               juce::MidiBuffer& midiMessages)
 {
-    // keyboardState.processNextMidiBuffer(midiMessages, 0, buffer.getNumSamples(), false);
+    keyboardState.processNextMidiBuffer(midiMessages, 0, buffer.getNumSamples(), false);
 
 
     juce::ScopedNoDenormals noDenormals;
