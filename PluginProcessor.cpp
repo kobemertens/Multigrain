@@ -14,7 +14,6 @@ AudioPluginAudioProcessor::AudioPluginAudioProcessor()
       position(0),
       synthAudioSource(keyboardState)
 {
-    fileBuffer.setSize(2, 0);
 }
 
 AudioPluginAudioProcessor::~AudioPluginAudioProcessor()
@@ -131,9 +130,10 @@ bool AudioPluginAudioProcessor::isBusesLayoutSupported (const BusesLayout& layou
 void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
                                               juce::MidiBuffer& midiMessages)
 {
-    keyboardState.processNextMidiBuffer(midiMessages, 0, buffer.getNumSamples(), false);
-
-
+    for (const auto metadata : midiMessages)
+        keyboardState.processNextMidiEvent(metadata.getMessage());
+    // keyboardState.processNextMidiBuffer(midiMessages, 0, buffer.getNumSamples(), false);
+    
     juce::ScopedNoDenormals noDenormals;
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
@@ -144,40 +144,6 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     // TODO: Maybe create a single audiosourcechannelinfo and reuse it
     juce::AudioSourceChannelInfo ci (buffer);
     synthAudioSource.getNextAudioBlock(ci);
-
-    // the buffer is empty
-    if (fileBuffer.getNumSamples() == 0)
-    {
-        return;
-    }
-
-    auto outputSamplesRemaining = buffer.getNumSamples();
-    auto outputSamplesOffset = 0;
-
-    while (outputSamplesRemaining > 0)
-    {
-        auto bufferSamplesRemaining = fileBuffer.getNumSamples() - position;
-        auto samplesThisTime = juce::jmin(outputSamplesRemaining, bufferSamplesRemaining);
-
-        for (auto channel = 0; channel < buffer.getNumChannels(); ++channel)
-        {
-            buffer.copyFrom(
-                channel,
-                0,
-                fileBuffer,
-                channel % fileBuffer.getNumChannels(),
-                position,
-                samplesThisTime
-            );
-        }
-
-        outputSamplesRemaining -= samplesThisTime;
-        outputSamplesOffset += samplesThisTime;
-        position += samplesThisTime;
-
-        if (position == fileBuffer.getNumSamples())
-            position = 0;
-    }
 }
 
 //==============================================================================
@@ -230,9 +196,9 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
     return layout;
 }
 
-juce::AudioSampleBuffer& AudioPluginAudioProcessor::getFileBuffer()
+SynthAudioSource& AudioPluginAudioProcessor::getSynthAudioSource()
 {
-    return fileBuffer;
+    return synthAudioSource;
 }
 
 //==============================================================================

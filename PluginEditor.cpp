@@ -114,7 +114,6 @@ void AudioPluginAudioProcessorEditor::filesDropped(const juce::StringArray &file
 {
     for (auto string : files)
     {
-        std::cout << string << std::endl;
         auto file = juce::File(string);
         std::unique_ptr<juce::AudioFormatReader> reader (formatManager.createReaderFor(file));
         if (reader.get() != nullptr)
@@ -123,14 +122,7 @@ void AudioPluginAudioProcessorEditor::filesDropped(const juce::StringArray &file
             auto duration = (float) reader->lengthInSamples / reader->sampleRate;
             if (duration < 10)
             {
-                auto& fileBuffer = processorRef.getFileBuffer();
-                fileBuffer.setSize((int) reader->numChannels, (int) reader->lengthInSamples);
-                reader->read(&fileBuffer,
-                             0,
-                             (int) reader->lengthInSamples,
-                             0,
-                             true,
-                             true);
+                processorRef.getSynthAudioSource().getSynth().addSound(new MultigrainSound(string, *reader, 0, 60, 0.02, 0.02, 10));
                 audioThumbnail.setSource(new juce::FileInputSource(file));
             }
             else

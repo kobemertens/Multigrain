@@ -33,7 +33,8 @@ MultigrainSound::~MultigrainSound()
 
 bool MultigrainSound::appliesToNote(int midiNoteNumber)
 {
-    return midiNotes[midiNoteNumber];
+    // return midiNotes[midiNoteNumber];
+    return true;
 }
 
 bool MultigrainSound::appliesToChannel(int /*midiChannel*/)
@@ -160,10 +161,14 @@ void SynthAudioSource::releaseResources() {}
 
 void SynthAudioSource::getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill) 
 {
+    juce::MidiBuffer incomingMidi;
+    keyboardState.processNextMidiBuffer (incomingMidi, bufferToFill.startSample, bufferToFill.numSamples, true);
     bufferToFill.clearActiveBufferRegion();
 
-    juce::MidiBuffer incomingMidi;
-    keyboardState.processNextMidiBuffer(incomingMidi, bufferToFill.startSample, bufferToFill.numSamples, true);
-
     synth.renderNextBlock(*bufferToFill.buffer, incomingMidi, bufferToFill.startSample, bufferToFill.numSamples);
+}
+
+juce::Synthesiser& SynthAudioSource::getSynth()
+{
+    return synth;
 }

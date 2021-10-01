@@ -61,8 +61,7 @@ private:
     Attachment grainRateSliderAttachment,
                grainDurationSliderAttachment,
                positionSliderAttachment;
-
-
+    
     juce::AudioFormatManager formatManager;
 
     juce::AudioThumbnailCache audioThumbnailCache;

@@ -76,6 +76,7 @@ public:
     void prepareToPlay(int samplesPerBlockExpected, double sampleRate) override;
     void releaseResources() override;
     void getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill) override;
+    juce::Synthesiser& getSynth();
 
 private:
     juce::MidiKeyboardState& keyboardState;
