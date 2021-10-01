@@ -99,18 +99,18 @@ std::vector<juce::Component*> AudioPluginAudioProcessorEditor::getComps()
     };
 }
 
-bool AudioPluginAudioProcessorEditor::isInterestedInFileDrag(const juce::StringArray &files)
+bool AudioPluginAudioProcessorEditor::isInterestedInFileDrag(const juce::StringArray &/*files*/)
 {
     return true;
 }
 
-void AudioPluginAudioProcessorEditor::fileDragEnter (const juce::StringArray &files, int x, int y){}
+void AudioPluginAudioProcessorEditor::fileDragEnter (const juce::StringArray &/*files*/, int /*x*/, int /*y*/){}
 
-void AudioPluginAudioProcessorEditor::fileDragMove (const juce::StringArray &files, int x, int y){}
+void AudioPluginAudioProcessorEditor::fileDragMove (const juce::StringArray &/*files*/, int /*x*/, int /*y*/){}
 
-void AudioPluginAudioProcessorEditor::fileDragExit (const juce::StringArray &files){}
+void AudioPluginAudioProcessorEditor::fileDragExit (const juce::StringArray &/*files*/){}
 
-void AudioPluginAudioProcessorEditor::filesDropped(const juce::StringArray &files, int x, int y)
+void AudioPluginAudioProcessorEditor::filesDropped(const juce::StringArray &files, int /*x*/, int /*y*/)
 {
     for (auto string : files)
     {

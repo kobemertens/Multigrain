@@ -31,7 +31,7 @@ MultigrainSound::~MultigrainSound()
 {
 }
 
-bool MultigrainSound::appliesToNote(int midiNoteNumber)
+bool MultigrainSound::appliesToNote(int /*midiNoteNumber*/)
 {
     // return midiNotes[midiNoteNumber];
     return true;
