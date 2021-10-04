@@ -6,11 +6,11 @@ class MultigrainSound : public juce::SynthesiserSound
 {
 public:
     MultigrainSound(const juce::String& soundName,
-                    juce::AudioFormatReader& source, 
+                    juce::AudioFormatReader& source,
                     const juce::BigInteger& notes,
-                    int midiNoteForNormalPitch, 
-                    double attackTimeSecs, 
-                    double releaseTimeSecs, 
+                    int midiNoteForNormalPitch,
+                    double attackTimeSecs,
+                    double releaseTimeSecs,
                     double maxSampleLengthSecs);
     ~MultigrainSound() override;
 
@@ -39,6 +39,16 @@ private:
 
 };
 
+
+struct Grain
+{
+    Grain(unsigned int initialPosition);
+    bool isActive;
+    unsigned int samplePosition;
+    unsigned int samplesRemaining;
+};
+
+
 class MultigrainVoice : public juce::SynthesiserVoice
 {
 public:
@@ -46,7 +56,7 @@ public:
     ~MultigrainVoice() override;
 
     bool canPlaySound(juce::SynthesiserSound* sound) override;
-    
+
     void startNote(int midiNoteNumber, float velocity, juce::SynthesiserSound*, int /*currentPitchWheelPosition*/) override;
     void stopNote(float /*velocity*/, bool allowTailOff) override;
 
@@ -60,6 +70,11 @@ private:
     double sourceSamplePosition = 0;
     float lgain = 0, rgain = 0;
 
+    unsigned int samplesUntilNextOnset = 0;
+
+    Grain grains[100];
+    unsigned int lastActivatedGrainIndex;
+
     juce::ADSR adsr;
 
     JUCE_LEAK_DETECTOR(MultigrainVoice);
@@ -72,7 +87,7 @@ public:
     ~SynthAudioSource();
 
     void setUsingSineWaveSound();
-    
+
     void prepareToPlay(int samplesPerBlockExpected, double sampleRate) override;
     void releaseResources() override;
     void getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill) override;
