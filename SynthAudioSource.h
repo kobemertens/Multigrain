@@ -41,11 +41,22 @@ private:
 
 };
 
-struct Grain
+class Grain : public juce::AudioSource
 {
-    Grain();
-    unsigned int samplesRemaining;
-    unsigned int samplePosition;
+public:
+    Grain(MultigrainSound& sound, int durationInSamples, int initPos);
+    void prepareToPlay(int samplesPerBlockExpected, double sampleRate) override;
+    void releaseResources() override;
+    void getNextAudioBlock (const juce::AudioSourceChannelInfo &bufferToFill) override;
+    void activate();
+    void resetGrain();
+
+private:
+    int samplesRemaining;
+    int samplePosition;
+    MultigrainSound& sound;
+
+    juce::ADSR adsr;
     bool isActive;
 };
 
@@ -65,7 +76,6 @@ public:
 
     void renderNextBlock(juce::AudioSampleBuffer& outputBuffer, int startSample, int numSamples) override;
 private:
-    void resetGrains();
     double pitchRatio = 0;
     double sourceSamplePosition = 0;
     float lgain = 0, rgain = 0;

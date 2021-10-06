@@ -43,16 +43,41 @@ bool MultigrainSound::appliesToChannel(int /*midiChannel*/)
 }
 
 // Grain
-Grain::Grain()
-    : samplePosition(0),
-      samplesRemaining(0),
-      isActive(false)
-{}
+Grain::Grain(MultigrainSound& sound, int durationInSamples, int initPos)
+    : isActive(false),
+      samplesRemaining(durationInSamples),
+      samplePosition(initPos),
+      sound(sound)
+{
+    juce::ADSR::Parameters params (durationInSamples/2, durationInSamples/2, 1.f, 0.f);
+    adsr.setParameters(params);
+}
+
+void Grain::prepareToPlay(int samplesPerBlockExpected, double sampleRate){}
+
+void Grain::releaseResources(){}
+
+void Grain::getNextAudioBlock (const juce::AudioSourceChannelInfo &bufferToFill)
+{
+    if (!isActive)
+    {
+        return;
+    }
+}
+
+void Grain::activate()
+{
+    adsr.noteOn();
+}
+
+void Grain::resetGrain()
+{
+    isActive = false;
+}
 
 // MultigrainVoice
 MultigrainVoice::MultigrainVoice(juce::AudioProcessorValueTreeState& apvts)
     : apvts(apvts),
-      samplesTillNextOnset((unsigned int) (apvts.getRawParameterValue("Grain Duration")->load() * getSampleRate())),
       nextGrainToActivateIndex(0)
 {
     // init grain array
@@ -84,11 +109,6 @@ void MultigrainVoice::startNote(int midiNoteNumber, float velocity, juce::Synthe
 
         adsr.setSampleRate(sound->sourceSampleRate);
         adsr.setParameters(sound->params);
-
-        // reset the grains when a new note starts
-        resetGrains();
-        samplesTillNextOnset = (unsigned int) (apvts.getRawParameterValue("Grain Duration")->load() * getSampleRate());
-        nextGrainToActivateIndex = 0;
         
         adsr.noteOn();
     }
@@ -158,15 +178,6 @@ void MultigrainVoice::renderNextBlock(juce::AudioSampleBuffer& outputBuffer, int
         }
     }
 }
-
-void MultigrainVoice::resetGrains()
-{
-    for (auto grain : grains)
-    {
-        grain->isActive = false;
-    }
-}
-
 
 // SynthAudioSource
 SynthAudioSource::SynthAudioSource(juce::MidiKeyboardState& keyboardState, juce::AudioProcessorValueTreeState& apvts)
