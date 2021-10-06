@@ -12,10 +12,10 @@ void LookAndFeel::drawRotarySlider (juce::Graphics& g,
 
     auto bounds = Rectangle<float>(x, y, width, height);
 
-    g.setColour(Colours::red);
+    g.setColour(Colours::white);
     g.fillEllipse(bounds);
 
-    g.setColour(Colours::green);
+    g.setColour(Colours::black);
     g.drawEllipse(bounds, 1.f);
 
     if(auto* rswl = dynamic_cast<RotarySliderWithLabels*>(&slider))
@@ -62,10 +62,10 @@ void RotarySliderWithLabels::paint(juce::Graphics& g)
 
     auto sliderBounds = getSliderBounds();
 
-    g.setColour(Colours::red);
-    g.drawRect(getLocalBounds());
-    g.setColour(Colours::yellow);
-    g.drawRect(sliderBounds);
+    // g.setColour(Colours::red);
+    // g.drawRect(getLocalBounds());
+    // g.setColour(Colours::yellow);
+    // g.drawRect(sliderBounds);
 
     getLookAndFeel().drawRotarySlider(
         g, 
@@ -97,7 +97,31 @@ juce::Rectangle<int> RotarySliderWithLabels::getSliderBounds() const
 
 juce::String RotarySliderWithLabels::getDisplayString() const
 {
-    return juce::String(getValue());
+    juce::String str;
+    bool isPercent = false;
+    if(auto* floatParam = dynamic_cast<juce::AudioParameterFloat*>(param))
+    {
+        float val = getValue();
+        if(floatParam->paramID == "Position")
+        {
+            val *= 100;
+            isPercent = true;
+
+        }
+        str = juce::String(val, 0);
+    }
+    else
+    {
+        jassertfalse; // this should not happen!
+    }
+
+    if (suffix.isNotEmpty())
+    {
+        str << " ";
+        str << suffix;
+    }
+
+    return str;
 }
 
 //==============================================================================
