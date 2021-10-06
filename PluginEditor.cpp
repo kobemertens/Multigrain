@@ -82,8 +82,8 @@ void RotarySliderWithLabels::paint(juce::Graphics& g)
     auto center = sliderBounds.toFloat().getCentre();
     auto radius = sliderBounds.getWidth() * 0.5f;
 
-    g.setColour(Colours::black);
-    g.setFont(getTextBoxHeight());
+    g.setColour(Colours::white);
+    g.setFont(getTextHeight());
 
     auto numChoices = labels.size();
     for (int i = 0; i < numChoices; i++)
@@ -165,6 +165,13 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
 {
     grainRateSlider.labels.add({0.f, "0.1 Hz"});
     grainRateSlider.labels.add({1.f, "4 Hz"});
+
+    grainDurationSlider.labels.add({0.f, "0.1 s"});
+    grainDurationSlider.labels.add({1.f, "4 s"});
+
+    positionSlider.labels.add({0.f, "0 %"});
+    positionSlider.labels.add({1.f, "100 %"});
+
     for (auto* comp : getComps())
     {
         addAndMakeVisible(comp);
@@ -191,7 +198,8 @@ void AudioPluginAudioProcessorEditor::changeListenerCallback(juce::ChangeBroadca
 void AudioPluginAudioProcessorEditor::paint (juce::Graphics& g)
 {
     // (Our component is opaque, so we must completely fill the background with a solid colour)
-    g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
+    // g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
+    g.fillAll(juce::Colours::black);
     auto bounds = getLocalBounds();
     auto thumbnailBounds = bounds.removeFromTop(bounds.getHeight() * 0.5);
     if (audioThumbnail.getNumChannels() == 0)
@@ -206,7 +214,7 @@ void AudioPluginAudioProcessorEditor::paint (juce::Graphics& g)
 
 void AudioPluginAudioProcessorEditor::paintIfNoFileLoaded (juce::Graphics& g, const juce::Rectangle<int>& thumbnailBounds)
 {
-    g.setColour(juce::Colours::darkgrey);
+    g.setColour(juce::Colours::grey);
     g.fillRect(thumbnailBounds);
     g.setColour(juce::Colours::white);
     g.drawFittedText("Drag .wav file here", thumbnailBounds, juce::Justification::centred, 1);
