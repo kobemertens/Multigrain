@@ -4,6 +4,9 @@
 //==============================================================================
 AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAudioProcessor& p)
     : AudioProcessorEditor (&p), processorRef (p),
+    grainRateSlider(*processorRef.apvts.getParameter("Grain Rate"), "Hz"),
+    grainDurationSlider(*processorRef.apvts.getParameter("Grain Duration"), "s"),
+    positionSlider(*processorRef.apvts.getParameter("Position"), "%"),
     grainRateSliderAttachment(processorRef.apvts, "Grain Rate", grainRateSlider),
     grainDurationSliderAttachment(processorRef.apvts, "Grain Duration", grainDurationSlider),
     positionSliderAttachment(processorRef.apvts, "Position", positionSlider),
