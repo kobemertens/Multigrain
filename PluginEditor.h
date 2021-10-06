@@ -53,7 +53,8 @@ private:
 //==============================================================================
 class AudioPluginAudioProcessorEditor  : public juce::AudioProcessorEditor,
                                          public juce::FileDragAndDropTarget,
-                                         private juce::ChangeListener
+                                         private juce::ChangeListener,
+                                         private juce::Slider::Listener
                                          
 {
 public:
@@ -70,6 +71,9 @@ public:
     void fileDragMove (const juce::StringArray &files, int x, int y) override;
     void fileDragExit (const juce::StringArray &files) override;
     void filesDropped(const juce::StringArray &files, int x, int y) override;
+
+    // Slider::Listener functions
+    void sliderValueChanged(juce::Slider* slider) override;
 
 private:
     void changeListenerCallback(juce::ChangeBroadcaster* source) override;

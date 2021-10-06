@@ -171,6 +171,7 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
 
     positionSlider.labels.add({0.f, "0 %"});
     positionSlider.labels.add({1.f, "100 %"});
+    positionSlider.addListener(this);
 
     for (auto* comp : getComps())
     {
@@ -187,6 +188,8 @@ AudioPluginAudioProcessorEditor::~AudioPluginAudioProcessorEditor()
 {
     audioThumbnail.removeChangeListener(this);
     audioThumbnail.setSource(nullptr); // No idea why this is needed but does not work otherwise
+    
+    positionSlider.removeListener(this);
 }
 
 void AudioPluginAudioProcessorEditor::changeListenerCallback(juce::ChangeBroadcaster* source)
@@ -222,6 +225,7 @@ void AudioPluginAudioProcessorEditor::paintIfNoFileLoaded (juce::Graphics& g, co
 
 void AudioPluginAudioProcessorEditor::paintIfFileLoaded (juce::Graphics& g, const juce::Rectangle<int>& thumbnailBounds)
 {
+    auto bounds = getLocalBounds();
     g.setColour(juce::Colours::white);
     g.fillRect(thumbnailBounds);
     g.setColour(juce::Colours::black);
@@ -231,6 +235,14 @@ void AudioPluginAudioProcessorEditor::paintIfFileLoaded (juce::Graphics& g, cons
                                 0.0,
                                 audioThumbnail.getTotalLength(),
                                 1.0f);
+
+    // draw position line
+    g.setColour(juce::Colours::black);
+    g.drawVerticalLine(
+        bounds.getX() + bounds.getWidth() * processorRef.apvts.getParameter("Position")->getValue(),
+        bounds.getTopLeft().getY(),
+        bounds.getBottom()
+    );
 }
 
 void AudioPluginAudioProcessorEditor::resized()
@@ -298,4 +310,9 @@ void AudioPluginAudioProcessorEditor::filesDropped(const juce::StringArray &file
             std::cout << "No reader created!" << std::endl;
         }
     }
+}
+
+void AudioPluginAudioProcessorEditor::sliderValueChanged(juce::Slider* slider)
+{
+    repaint();
 }

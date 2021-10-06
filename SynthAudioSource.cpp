@@ -42,8 +42,25 @@ bool MultigrainSound::appliesToChannel(int /*midiChannel*/)
     return true;
 }
 
+// Grain
+Grain::Grain()
+    : samplePosition(0),
+      samplesRemaining(0),
+      isActive(false)
+{}
+
 // MultigrainVoice
-MultigrainVoice::MultigrainVoice(){}
+MultigrainVoice::MultigrainVoice(juce::AudioProcessorValueTreeState& apvts)
+    : apvts(apvts),
+      samplesTillNextOnset((unsigned int) (apvts.getRawParameterValue("Grain Duration")->load() * getSampleRate())),
+      nextGrainToActivateIndex(0)
+{
+    // init grain array
+    auto maxDuration = apvts.getParameter("Grain Duration")->getNormalisableRange().getRange().getEnd();
+    auto maxRate = apvts.getParameter("Grain Rate")->getNormalisableRange().getRange().getEnd();
+    for(int i = 0; i < maxDuration*maxRate; i++)
+        grains.add(new Grain());
+}
 
 MultigrainVoice::~MultigrainVoice(){}
 
@@ -60,13 +77,19 @@ void MultigrainVoice::startNote(int midiNoteNumber, float velocity, juce::Synthe
         pitchRatio = std::pow(2.0, (midiNoteNumber - sound->midiRootNote) / 12.0)
             *sound->sourceSampleRate / getSampleRate();
         
-        sourceSamplePosition = 0.0;
+        sourceSamplePosition = apvts.getParameter("Position")->getValue() * sound->length;
+
         lgain = velocity;
         rgain = velocity;
 
         adsr.setSampleRate(sound->sourceSampleRate);
         adsr.setParameters(sound->params);
 
+        // reset the grains when a new note starts
+        resetGrains();
+        samplesTillNextOnset = (unsigned int) (apvts.getRawParameterValue("Grain Duration")->load() * getSampleRate());
+        nextGrainToActivateIndex = 0;
+        
         adsr.noteOn();
     }
 }
@@ -136,13 +159,22 @@ void MultigrainVoice::renderNextBlock(juce::AudioSampleBuffer& outputBuffer, int
     }
 }
 
+void MultigrainVoice::resetGrains()
+{
+    for (auto grain : grains)
+    {
+        grain->isActive = false;
+    }
+}
+
 
 // SynthAudioSource
-SynthAudioSource::SynthAudioSource(juce::MidiKeyboardState& keyboardState)
-    : keyboardState(keyboardState)
+SynthAudioSource::SynthAudioSource(juce::MidiKeyboardState& keyboardState, juce::AudioProcessorValueTreeState& apvts)
+    : keyboardState(keyboardState),
+      apvts(apvts)
 {
     for (auto i = 0; i < 4; i++)
-        synth.addVoice(new MultigrainVoice());
+        synth.addVoice(new MultigrainVoice(apvts));
 }
 
 SynthAudioSource::~SynthAudioSource(){}

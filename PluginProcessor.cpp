@@ -12,7 +12,7 @@ AudioPluginAudioProcessor::AudioPluginAudioProcessor()
                      #endif
                        ),
       position(0),
-      synthAudioSource(keyboardState)
+      synthAudioSource(keyboardState, apvts)
 {
 }
 
@@ -132,7 +132,7 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
 {
     for (const auto metadata : midiMessages)
         keyboardState.processNextMidiEvent(metadata.getMessage());
-    // keyboardState.processNextMidiBuffer(midiMessages, 0, buffer.getNumSamples(), false);
+    // keyboardState.processNextMidiBuffer(midiMessages, 0, buffer.getNumSamples(), false); // does not work because the messages will not be added in the synth
     
     juce::ScopedNoDenormals noDenormals;
     auto totalNumInputChannels  = getTotalNumInputChannels();
@@ -180,12 +180,12 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
 
     layout.add(std::make_unique<juce::AudioParameterFloat>("Grain Rate", 
                                                            "Grain Rate", 
-                                                           juce::NormalisableRange<float>(.1f, 4.f, .1f, 1.f), 
-                                                           .5f));
+                                                           juce::NormalisableRange<float>(.25f, 250.f, .01f, 1.f), 
+                                                           5.f));
     
     layout.add(std::make_unique<juce::AudioParameterFloat>("Grain Duration", 
                                                            "Grain Duration", 
-                                                           juce::NormalisableRange<float>(.1f, 4.f, .1f, 1.f), 
+                                                           juce::NormalisableRange<float>(.001f, 4.f, .01f, 1.f), 
                                                            1.f));
 
     layout.add(std::make_unique<juce::AudioParameterFloat>("Position", 

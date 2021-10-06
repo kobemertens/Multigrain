@@ -41,10 +41,18 @@ private:
 
 };
 
+struct Grain
+{
+    Grain();
+    unsigned int samplesRemaining;
+    unsigned int samplePosition;
+    bool isActive;
+};
+
 class MultigrainVoice : public juce::SynthesiserVoice
 {
 public:
-    MultigrainVoice();
+    MultigrainVoice(juce::AudioProcessorValueTreeState& apvts);
     ~MultigrainVoice() override;
 
     bool canPlaySound(juce::SynthesiserSound* sound) override;
@@ -57,12 +65,19 @@ public:
 
     void renderNextBlock(juce::AudioSampleBuffer& outputBuffer, int startSample, int numSamples) override;
 private:
-    // store information about the state here
+    void resetGrains();
     double pitchRatio = 0;
     double sourceSamplePosition = 0;
     float lgain = 0, rgain = 0;
 
+    unsigned int samplesTillNextOnset; 
+    unsigned int nextGrainToActivateIndex;
+
     juce::ADSR adsr;
+
+    juce::OwnedArray<Grain> grains;
+
+    juce::AudioProcessorValueTreeState& apvts;
 
     JUCE_LEAK_DETECTOR(MultigrainVoice);
 };
@@ -70,7 +85,7 @@ private:
 class SynthAudioSource : public juce::AudioSource
 {
 public:
-    SynthAudioSource (juce::MidiKeyboardState& keyboardState);
+    SynthAudioSource (juce::MidiKeyboardState& keyboardState, juce::AudioProcessorValueTreeState& apvts);
     ~SynthAudioSource();
 
     void setUsingSineWaveSound();
@@ -81,6 +96,7 @@ public:
     juce::Synthesiser& getSynth();
 
 private:
+    juce::AudioProcessorValueTreeState& apvts;
     juce::MidiKeyboardState& keyboardState;
     juce::Synthesiser synth;
 
