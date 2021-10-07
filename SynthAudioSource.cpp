@@ -43,11 +43,13 @@ bool MultigrainSound::appliesToChannel(int /*midiChannel*/)
 }
 
 // Grain
-Grain::Grain()
-    : samplePosition(0),
-      samplesRemaining(0),
-      isActive(false)
-{}
+Grain::Grain(MultigrainSound& sound)
+    : sound(sound) {}
+
+Grain::activate(int duration, int sourcePosition)
+{
+    
+}
 
 // MultigrainVoice
 MultigrainVoice::MultigrainVoice(juce::AudioProcessorValueTreeState& apvts)
@@ -84,11 +86,6 @@ void MultigrainVoice::startNote(int midiNoteNumber, float velocity, juce::Synthe
 
         adsr.setSampleRate(sound->sourceSampleRate);
         adsr.setParameters(sound->params);
-
-        // reset the grains when a new note starts
-        resetGrains();
-        samplesTillNextOnset = (unsigned int) (apvts.getRawParameterValue("Grain Duration")->load() * getSampleRate());
-        nextGrainToActivateIndex = 0;
         
         adsr.noteOn();
     }

@@ -41,11 +41,16 @@ private:
 
 };
 
-struct Grain
+class Grain
 {
-    Grain();
+public:
+    Grain(MultigrainSound& sound);
+    void renderNextBlock(juce::AudioSampleBuffer& outputBuffer, int startSample, int numSamples);
+    void activate(int duration, int sourcePosition);
+private:
+    MultigrainSound& sound;
     unsigned int samplesRemaining;
-    unsigned int samplePosition;
+    unsigned int sourcePosition;
     bool isActive;
 };
 
@@ -63,9 +68,10 @@ public:
     void pitchWheelMoved(int newValue) override;
     void controllerMoved(int controllerNumber, int newValue) override;
 
+    void activateGrain(int duration);
+
     void renderNextBlock(juce::AudioSampleBuffer& outputBuffer, int startSample, int numSamples) override;
 private:
-    void resetGrains();
     double pitchRatio = 0;
     double sourceSamplePosition = 0;
     float lgain = 0, rgain = 0;
