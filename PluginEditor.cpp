@@ -29,7 +29,7 @@ void LookAndFeel::drawRotarySlider (juce::Graphics& g,
         r.setTop(bounds.getY());
         r.setBottom(center.getY() - rswl->getTextHeight() * 1.5);
         p.addRoundedRectangle(r, 2.f);
-        
+
         jassert(rotaryStartAngle < rotaryEndAngle);
 
         auto sliderAngRad = jmap(sliderPosProportional, 0.f, 1.f, rotaryStartAngle, rotaryEndAngle);
@@ -68,14 +68,14 @@ void RotarySliderWithLabels::paint(juce::Graphics& g)
     // g.drawRect(sliderBounds);
 
     getLookAndFeel().drawRotarySlider(
-        g, 
+        g,
         sliderBounds.getX(),
         sliderBounds.getY(),
         sliderBounds.getWidth(),
         sliderBounds.getHeight(),
         jmap(getValue(), range.getStart(), range.getEnd(), 0., 1.),
         startAng,
-        endAng, 
+        endAng,
         *this
     );
 
@@ -188,7 +188,7 @@ AudioPluginAudioProcessorEditor::~AudioPluginAudioProcessorEditor()
 {
     audioThumbnail.removeChangeListener(this);
     audioThumbnail.setSource(nullptr); // No idea why this is needed but does not work otherwise
-    
+
     positionSlider.removeListener(this);
 }
 
@@ -255,7 +255,7 @@ void AudioPluginAudioProcessorEditor::resized()
     auto grainRateArea = knobArea.removeFromLeft(knobArea.getWidth() * 0.33);
     auto grainDurationArea = knobArea.removeFromLeft(knobArea.getWidth() * 0.5);
     auto durationArea = knobArea;
-    
+
     grainRateSlider.setBounds(grainRateArea);
     grainDurationSlider.setBounds(grainDurationArea);
     positionSlider.setBounds(durationArea);
@@ -296,7 +296,7 @@ void AudioPluginAudioProcessorEditor::filesDropped(const juce::StringArray &file
             auto duration = (float) reader->lengthInSamples / reader->sampleRate;
             if (duration < 10)
             {
-                processorRef.getSynthAudioSource().getSynth().addSound(new MultigrainSound(string, *reader, 0, 60, 0.02, 0.02, 10));
+                processorRef.getSynthAudioSource().initSynthAudioSource(new MultigrainSound(string, *reader, 0, 60, 0.02, 0.02, 10));
                 audioThumbnail.setSource(new juce::FileInputSource(file));
             }
             else
