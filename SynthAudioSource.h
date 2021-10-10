@@ -52,13 +52,13 @@ class GrainSource
 public:
     GrainSource(MultigrainSound& sourceData);
     void processNextBlock(juce::AudioSampleBuffer& bufferToProcess, int startSample, int numSamples); // write information about pitch here
-    void init(int startPositionSample, float pitchRatio);
+    void init(int startPositionSample, double pitchRatio);
 
     bool isDepleted; // returns true if there are no samples left in the source
 
 private:
     double sourceSamplePosition;
-    float pitchRatio;
+    double pitchRatio;
     MultigrainSound& sourceData;
 };
 
@@ -86,7 +86,7 @@ class Grain
 public:
     Grain(MultigrainSound& sound);
     void renderNextBlock(juce::AudioSampleBuffer& outputBuffer, int startSample, int numSamples);
-    void activate(int durationSamples, int sourcePosition, float pitchRatio, float grainAmplitude);
+    void activate(int durationSamples, int sourcePosition, double pitchRatio, float grainAmplitude);
 private:
     GrainSource source;
     GrainEnvelope envelope;

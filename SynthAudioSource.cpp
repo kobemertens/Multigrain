@@ -46,7 +46,7 @@ bool MultigrainSound::appliesToChannel(int /*midiChannel*/)
 GrainSource::GrainSource(MultigrainSound& sourceData)
     : sourceData(sourceData) {}
 
-void GrainSource::init(int startPositionSample, float pitchRatio)
+void GrainSource::init(int startPositionSample, double pitchRatio)
 {
     pitchRatio = pitchRatio;
     sourceSamplePosition = (double) startPositionSample;
@@ -56,9 +56,7 @@ void GrainSource::init(int startPositionSample, float pitchRatio)
 void GrainSource::processNextBlock(juce::AudioSampleBuffer& bufferToProcess, int startSample, int numSamples)
 {
     if (isDepleted)
-    {
         return;
-    }
 
     juce::AudioSampleBuffer* data = sourceData.getAudioData();
     const float* const inL = data->getReadPointer (0);
@@ -102,10 +100,10 @@ void GrainSource::processNextBlock(juce::AudioSampleBuffer& bufferToProcess, int
 Grain::Grain(MultigrainSound& sound)
     : source(sound) {}
 
-void Grain::activate(int durationSamples, int sourcePosition, float pitchRatio, float grainAmplitude)
+void Grain::activate(int durationSamples, int sourcePosition, double pitchRatio, float grainAmplitude)
 {
     samplesRemaining = durationSamples;
-    source.init(durationSamples, pitchRatio);
+    source.init(sourcePosition, pitchRatio);
     envelope.init(durationSamples, grainAmplitude);
     isActive = true;
 }
@@ -113,9 +111,7 @@ void Grain::activate(int durationSamples, int sourcePosition, float pitchRatio, 
 void Grain::renderNextBlock(juce::AudioSampleBuffer& outputBuffer, int startSample, int numSamples)
 {
     if (!isActive)
-    {
         return;
-    }
 
     auto samplesToProcess = juce::jmin(numSamples, samplesRemaining);
     source.processNextBlock(outputBuffer, startSample, samplesToProcess);
@@ -278,7 +274,7 @@ Grain& MultigrainVoice::activateNextGrain()
     grains[nextGrainToActivateIndex]->activate(
         apvts.getRawParameterValue("Grain Duration")->load()*getSampleRate(),
         apvts.getParameter("Position")->getValue()*sound.getAudioData()->getNumSamples(),
-        1.f, // TODO use actual pitchRatio of the pressed key
+        1., // TODO use actual pitchRatio of the pressed key
         1.f // TODO allow randomization of this value
     );
     nextGrainToActivateIndex++;
