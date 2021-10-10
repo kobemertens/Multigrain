@@ -48,7 +48,7 @@ GrainSource::GrainSource(MultigrainSound& sourceData)
 
 void GrainSource::init(int startPositionSample, double pitchRatio)
 {
-    pitchRatio = pitchRatio;
+    this->pitchRatio = pitchRatio;
     sourceSamplePosition = (double) startPositionSample;
     isDepleted = startPositionSample >= sourceData.length;
 }
@@ -115,7 +115,7 @@ void Grain::renderNextBlock(juce::AudioSampleBuffer& outputBuffer, int startSamp
 
     auto samplesToProcess = juce::jmin(numSamples, samplesRemaining);
     source.processNextBlock(outputBuffer, startSample, samplesToProcess);
-    envelope.processNextBlock(outputBuffer, startSample, samplesToProcess);
+    // envelope.processNextBlock(outputBuffer, startSample, samplesToProcess);
 
     if(samplesRemaining - numSamples <= 0)
         isActive = false;
