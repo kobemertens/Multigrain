@@ -65,7 +65,7 @@ void GrainSource::processNextBlock(juce::AudioSampleBuffer& bufferToProcess, int
     float* outL = bufferToProcess.getWritePointer (0, startSample);
     float* outR = bufferToProcess.getNumChannels() > 1 ? bufferToProcess.getWritePointer (1, startSample) : nullptr;
 
-    while(--numSamples)
+    while(--numSamples >= 0)
     {
         auto pos = (int) sourceSamplePosition;
         auto alpha = (float) (sourceSamplePosition - pos);
@@ -98,7 +98,9 @@ void GrainSource::processNextBlock(juce::AudioSampleBuffer& bufferToProcess, int
 
 // Grain
 Grain::Grain(MultigrainSound& sound)
-    : source(sound) {}
+    : source(sound),
+      isActive(false)
+{}
 
 void Grain::activate(int durationSamples, int sourcePosition, double pitchRatio, float grainAmplitude)
 {
@@ -117,7 +119,7 @@ void Grain::renderNextBlock(juce::AudioSampleBuffer& outputBuffer, int startSamp
     source.processNextBlock(outputBuffer, startSample, samplesToProcess);
     // envelope.processNextBlock(outputBuffer, startSample, samplesToProcess);
 
-    if(samplesRemaining - numSamples <= 0)
+    if(samplesRemaining - numSamples <= 0) // disable grains whose source is depleted here
         isActive = false;
 }
 
@@ -151,7 +153,7 @@ void GrainEnvelope::processNextBlock(juce::AudioSampleBuffer& bufferToProcess, i
 // MultigrainVoice
 MultigrainVoice::MultigrainVoice(juce::AudioProcessorValueTreeState& apvts, MultigrainSound& sound)
     : apvts(apvts),
-      samplesTillNextOnset((unsigned int) (apvts.getRawParameterValue("Grain Duration")->load() * getSampleRate())),
+      samplesTillNextOnset(0),
       nextGrainToActivateIndex(0),
       sound(sound)
 {
@@ -181,10 +183,9 @@ void MultigrainVoice::startNote(int midiNoteNumber, float velocity, juce::Synthe
 
         lgain = velocity;
         rgain = velocity;
-
+        
         adsr.setSampleRate(sound->sourceSampleRate);
         adsr.setParameters(sound->params);
-
         adsr.noteOn();
     }
 }
@@ -219,52 +220,12 @@ void MultigrainVoice::renderNextBlock(juce::AudioSampleBuffer& outputBuffer, int
         {
             Grain& grain = activateNextGrain();
             grain.renderNextBlock(outputBuffer, startSample + samplesTillNextOnset, numSamples - samplesTillNextOnset);
-            samplesTillNextOnset += 1/apvts.getRawParameterValue("Grain Rate")->load()*getSampleRate(); // TODO allow randomness here
+            samplesTillNextOnset += (unsigned int) (1/apvts.getRawParameterValue("Grain Rate")->load()*getSampleRate()); // TODO allow randomness here
         }
 
         samplesTillNextOnset -= numSamples;
 
-        // auto& data = *playingSound->data;
-        // const float* const inL = data.getReadPointer (0);
-        // const float* const inR = data.getNumChannels() > 1 ? data.getReadPointer (1) : nullptr;
-
-        // float* outL = outputBuffer.getWritePointer (0, startSample);
-        // float* outR = outputBuffer.getNumChannels() > 1 ? outputBuffer.getWritePointer (1, startSample) : nullptr;
-
-        // while(--numSamples >= 0)
-        // {
-        //     auto pos = (int) sourceSamplePosition;
-        //     auto alpha = (float) (sourceSamplePosition - pos);
-        //     auto invAlpha = 1.0f - alpha;
-
-        //     // just using a very simple linear interpolation here..
-        //     float l = (inL[pos] * invAlpha + inL[pos + 1] * alpha);
-        //     float r = (inR != nullptr) ? (inR[pos] * invAlpha + inR[pos + 1] * alpha)
-        //                                : l;
-
-        //     auto envelopeValue = adsr.getNextSample();
-
-        //     l *= lgain * envelopeValue;
-        //     r *= rgain * envelopeValue;
-
-        //     if (outR != nullptr)
-        //     {
-        //         *outL++ += l;
-        //         *outR++ += r;
-        //     }
-        //     else
-        //     {
-        //         *outL++ += (l + r) * 0.5f;
-        //     }
-
-        //     sourceSamplePosition += pitchRatio;
-
-        //     if (sourceSamplePosition > playingSound->length)
-        //     {
-        //         stopNote (0.0f, false);
-        //         break;
-        //     }
-        // }
+        adsr.applyEnvelopeToBuffer(outputBuffer, startSample, numSamples);
     }
 }
 

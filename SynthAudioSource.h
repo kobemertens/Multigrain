@@ -119,7 +119,7 @@ private:
     double sourceSamplePosition = 0;
     float lgain = 0, rgain = 0;
 
-    unsigned int samplesTillNextOnset;
+    int samplesTillNextOnset;
     unsigned int nextGrainToActivateIndex;
 
     juce::ADSR adsr;
