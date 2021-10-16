@@ -183,6 +183,8 @@ void MultigrainVoice::startNote(int midiNoteNumber, float velocity, juce::Synthe
 
         lgain = velocity;
         rgain = velocity;
+
+        samplesTillNextOnset = 0;
         
         adsr.setSampleRate(sound->sourceSampleRate);
         adsr.setParameters(sound->params);
@@ -235,7 +237,7 @@ Grain& MultigrainVoice::activateNextGrain()
     grains[nextGrainToActivateIndex]->activate(
         apvts.getRawParameterValue("Grain Duration")->load()*getSampleRate(),
         apvts.getParameter("Position")->getValue()*sound.getAudioData()->getNumSamples(),
-        1., // TODO use actual pitchRatio of the pressed key
+        pitchRatio,
         1.f // TODO allow randomization of this value
     );
     nextGrainToActivateIndex++;
@@ -281,5 +283,6 @@ juce::Synthesiser& SynthAudioSource::getSynth()
 void SynthAudioSource::initSynthAudioSource(MultigrainSound* sound)
 {
     synth.addSound(sound);
-    synth.addVoice(new MultigrainVoice(apvts, *sound));
+    for (int i = 0; i < 2; i++)
+        synth.addVoice(new MultigrainVoice(apvts, *sound));
 }
