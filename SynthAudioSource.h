@@ -52,13 +52,11 @@ class GrainSource
 public:
     GrainSource(MultigrainSound& sourceData);
     void processNextBlock(juce::AudioSampleBuffer& bufferToProcess, int startSample, int numSamples); // write information about pitch here
-    void init(int startPositionSample, double pitchRatio);
-
-    bool isDepleted; // returns true if there are no samples left in the source
+    void init(double startPosition, double pitchRatio);
 
 private:
-    double sourceSamplePosition;
     double pitchRatio;
+    double sourceSamplePosition;
     MultigrainSound& sourceData;
 };
 
@@ -72,10 +70,12 @@ public:
     void init(int durationSamples, float grainAmplitude);
 private:
     float amplitude;
-    float rdur;
-    float rdur2;
-    float slope;
-    float curve;
+    float grainAmplitude;
+    int attackSamples;
+    int releaseSamples;
+    float amplitudeIncrement;
+    int currentSample;
+    int durationSamples;
 };
 
 /**
@@ -86,7 +86,7 @@ class Grain
 public:
     Grain(MultigrainSound& sound);
     void renderNextBlock(juce::AudioSampleBuffer& outputBuffer, int startSample, int numSamples);
-    void activate(int durationSamples, int sourcePosition, double pitchRatio, float grainAmplitude);
+    void activate(int durationSamples, double sourcePosition, double pitchRatio, float grainAmplitude);
 private:
     GrainSource source;
     GrainEnvelope envelope;
@@ -114,10 +114,13 @@ public:
 
     void renderNextBlock(juce::AudioSampleBuffer& outputBuffer, int startSample, int numSamples) override;
 private:
-    Grain& activateNextGrain();
+    Grain& activateNextGrain(double sourcePosition, int grainDurationInSamples);
     double pitchRatio = 0;
     double sourceSamplePosition = 0;
     float lgain = 0, rgain = 0;
+
+    double currentNoteInHertz;
+    int numGrains;
 
     int samplesTillNextOnset;
     unsigned int nextGrainToActivateIndex;
@@ -138,14 +141,12 @@ public:
     SynthAudioSource (juce::MidiKeyboardState& keyboardState, juce::AudioProcessorValueTreeState& apvts);
     ~SynthAudioSource();
 
-    void setUsingSineWaveSound();
-
     void prepareToPlay(int samplesPerBlockExpected, double sampleRate) override;
     void releaseResources() override;
     void getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill) override;
     juce::Synthesiser& getSynth();
 
-    void initSynthAudioSource(MultigrainSound* sound);
+    void init(MultigrainSound* sound);
 private:
     juce::MidiKeyboardState& keyboardState;
     juce::AudioProcessorValueTreeState& apvts;

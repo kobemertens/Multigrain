@@ -136,6 +136,11 @@ juce::String RotarySliderWithLabels::getDisplayString() const
         }
         str = juce::String(val, 0);
     }
+    else if (auto* intParam = dynamic_cast<juce::AudioParameterInt*>(param))
+    {
+        int val = getValue();
+        str = juce::String(val);
+    }
     else
     {
         jassertfalse; // this should not happen!
@@ -153,21 +158,21 @@ juce::String RotarySliderWithLabels::getDisplayString() const
 //==============================================================================
 AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAudioProcessor& p)
     : AudioProcessorEditor (&p), processorRef (p),
-    grainRateSlider(*processorRef.apvts.getParameter("Grain Rate"), "Hz"),
-    grainDurationSlider(*processorRef.apvts.getParameter("Grain Duration"), "s"),
+    numGrainsSlider(*processorRef.apvts.getParameter("Num Grains"), ""),
+    grainDurationSlider(*processorRef.apvts.getParameter("Grain Duration"), ""),
     positionSlider(*processorRef.apvts.getParameter("Position"), "%"),
-    grainRateSliderAttachment(processorRef.apvts, "Grain Rate", grainRateSlider),
+    numGrainsSliderAttachment(processorRef.apvts, "Num Grains", numGrainsSlider),
     grainDurationSliderAttachment(processorRef.apvts, "Grain Duration", grainDurationSlider),
     positionSliderAttachment(processorRef.apvts, "Position", positionSlider),
     keyboardComponent(processorRef.keyboardState, juce::MidiKeyboardComponent::horizontalKeyboard),
     audioThumbnailCache(5),
     audioThumbnail(512, formatManager, audioThumbnailCache)
 {
-    grainRateSlider.labels.add({0.f, "0.1 Hz"});
-    grainRateSlider.labels.add({1.f, "4 Hz"});
+    numGrainsSlider.labels.add({0.f, "1"});
+    numGrainsSlider.labels.add({1.f, "8"});
 
-    grainDurationSlider.labels.add({0.f, "0.1 s"});
-    grainDurationSlider.labels.add({1.f, "4 s"});
+    grainDurationSlider.labels.add({0.f, "1"});
+    grainDurationSlider.labels.add({1.f, "1000"});
 
     positionSlider.labels.add({0.f, "0 %"});
     positionSlider.labels.add({1.f, "100 %"});
@@ -252,11 +257,11 @@ void AudioPluginAudioProcessorEditor::resized()
     auto knobArea = bounds.removeFromTop(bounds.getHeight() * 0.7);
     auto keyboardArea = bounds;
 
-    auto grainRateArea = knobArea.removeFromLeft(knobArea.getWidth() * 0.33);
+    auto numGrainsArea = knobArea.removeFromLeft(knobArea.getWidth() * 0.33);
     auto grainDurationArea = knobArea.removeFromLeft(knobArea.getWidth() * 0.5);
     auto durationArea = knobArea;
 
-    grainRateSlider.setBounds(grainRateArea);
+    numGrainsSlider.setBounds(numGrainsArea);
     grainDurationSlider.setBounds(grainDurationArea);
     positionSlider.setBounds(durationArea);
     keyboardComponent.setBounds(keyboardArea);
@@ -266,7 +271,7 @@ std::vector<juce::Component*> AudioPluginAudioProcessorEditor::getComps()
 {
     return
     {
-        &grainRateSlider,
+        &numGrainsSlider,
         &grainDurationSlider,
         &positionSlider,
         &keyboardComponent
@@ -296,7 +301,7 @@ void AudioPluginAudioProcessorEditor::filesDropped(const juce::StringArray &file
             auto duration = (float) reader->lengthInSamples / reader->sampleRate;
             if (duration < 10)
             {
-                processorRef.getSynthAudioSource().initSynthAudioSource(new MultigrainSound(string, *reader, 0, 60, 0.02, 0.02, 10));
+                processorRef.getSynthAudioSource().init(new MultigrainSound(string, *reader, 0, 60, 0.02, 0.02, 10));
                 audioThumbnail.setSource(new juce::FileInputSource(file));
             }
             else

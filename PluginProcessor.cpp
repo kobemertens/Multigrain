@@ -178,14 +178,15 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
 {
     juce::AudioProcessorValueTreeState::ParameterLayout layout;
 
-    layout.add(std::make_unique<juce::AudioParameterFloat>("Grain Rate", 
-                                                           "Grain Rate", 
-                                                           juce::NormalisableRange<float>(.25f, 250.f, .01f, 1.f), 
-                                                           5.f));
+    layout.add(std::make_unique<juce::AudioParameterInt>("Num Grains", 
+                                                         "Num Grains", 
+                                                         1, 
+                                                         8,
+                                                         1));
     
     layout.add(std::make_unique<juce::AudioParameterFloat>("Grain Duration", 
                                                            "Grain Duration", 
-                                                           juce::NormalisableRange<float>(.001f, 4.f, .01f, 1.f), 
+                                                           juce::NormalisableRange<float>(1.f, 1000.f, .01f, .18f), 
                                                            1.f));
 
     layout.add(std::make_unique<juce::AudioParameterFloat>("Position", 

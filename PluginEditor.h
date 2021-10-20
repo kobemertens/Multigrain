@@ -17,13 +17,14 @@ struct LookAndFeel : juce::LookAndFeel_V4
 
 struct RotarySliderWithLabels : juce::Slider
 {
-    RotarySliderWithLabels(juce::RangedAudioParameter& rap, const juce::String& unitSuffix) 
+    RotarySliderWithLabels(juce::RangedAudioParameter& rap, const juce::String& unitSuffix, double skewFactor=1., bool symmetricSkew=false)
         : juce::Slider(juce::Slider::SliderStyle::RotaryVerticalDrag,
                                         juce::Slider::TextEntryBoxPosition::NoTextBox),
           param(&rap),
           suffix(unitSuffix)
     {
         setLookAndFeel(&lnf);
+        setSkewFactor(skewFactor, symmetricSkew);
     }
 
     ~RotarySliderWithLabels()
@@ -86,7 +87,7 @@ private:
     // --------------------------------------------------------------
     // Components (dont forget to add to getComps)
     // --------------------------------------------------------------
-    RotarySliderWithLabels grainRateSlider,
+    RotarySliderWithLabels numGrainsSlider,
                            grainDurationSlider,
                            positionSlider;
 
@@ -99,7 +100,7 @@ private:
     using APVTS = juce::AudioProcessorValueTreeState;
     using Attachment = APVTS::SliderAttachment;
 
-    Attachment grainRateSliderAttachment,
+    Attachment numGrainsSliderAttachment,
                grainDurationSliderAttachment,
                positionSliderAttachment;
     

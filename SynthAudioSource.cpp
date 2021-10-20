@@ -27,9 +27,7 @@ MultigrainSound::MultigrainSound(const juce::String& soundName,
     }
 }
 
-MultigrainSound::~MultigrainSound()
-{
-}
+MultigrainSound::~MultigrainSound() {}
 
 bool MultigrainSound::appliesToNote(int /*midiNoteNumber*/)
 {
@@ -46,18 +44,17 @@ bool MultigrainSound::appliesToChannel(int /*midiChannel*/)
 GrainSource::GrainSource(MultigrainSound& sourceData)
     : sourceData(sourceData) {}
 
-void GrainSource::init(int startPositionSample, double pitchRatio)
+void GrainSource::init(double startPosition, double pitchRatio)
 {
     this->pitchRatio = pitchRatio;
-    sourceSamplePosition = (double) startPositionSample;
-    isDepleted = startPositionSample >= sourceData.length;
+    if (startPosition >= sourceData.length)
+        startPosition -= sourceData.length;
+
+    sourceSamplePosition = startPosition;
 }
 
 void GrainSource::processNextBlock(juce::AudioSampleBuffer& bufferToProcess, int startSample, int numSamples)
 {
-    if (isDepleted)
-        return;
-
     juce::AudioSampleBuffer* data = sourceData.getAudioData();
     const float* const inL = data->getReadPointer (0);
     const float* const inR = data->getNumChannels() > 1 ? data->getReadPointer (1) : nullptr;
@@ -88,11 +85,8 @@ void GrainSource::processNextBlock(juce::AudioSampleBuffer& bufferToProcess, int
 
         sourceSamplePosition += pitchRatio;
 
-        if (sourceSamplePosition > sourceData.length)
-        {
-            isDepleted = true;
-            break;
-        }
+        if (sourceSamplePosition >= sourceData.length)   
+            sourceSamplePosition -= sourceData.length;
     }
 }
 
@@ -102,7 +96,7 @@ Grain::Grain(MultigrainSound& sound)
       isActive(false)
 {}
 
-void Grain::activate(int durationSamples, int sourcePosition, double pitchRatio, float grainAmplitude)
+void Grain::activate(int durationSamples, double sourcePosition, double pitchRatio, float grainAmplitude)
 {
     samplesRemaining = durationSamples;
     source.init(sourcePosition, pitchRatio);
@@ -117,20 +111,27 @@ void Grain::renderNextBlock(juce::AudioSampleBuffer& outputBuffer, int startSamp
 
     auto samplesToProcess = juce::jmin(numSamples, samplesRemaining);
     source.processNextBlock(outputBuffer, startSample, samplesToProcess);
-    // envelope.processNextBlock(outputBuffer, startSample, samplesToProcess);
+    envelope.processNextBlock(outputBuffer, startSample, samplesToProcess);
 
-    if(samplesRemaining - numSamples <= 0) // disable grains whose source is depleted here
+    samplesRemaining -= samplesToProcess;
+
+    if(samplesRemaining == 0)
         isActive = false;
+
+    if(samplesRemaining < 0)
+        jassertfalse;
 }
 
 // GrainEnvelope
 void GrainEnvelope::init(int durationSamples, float grainAmplitude)
 {
     amplitude = 0;
-    rdur = 1.f/durationSamples;
-    rdur2 = rdur*rdur;
-    slope = 4.f * grainAmplitude * (rdur - rdur2);
-    curve = -8.f * grainAmplitude * rdur2;
+    currentSample = 0;
+    this->durationSamples = durationSamples;
+    this->grainAmplitude = grainAmplitude;
+    attackSamples = durationSamples / 2;
+    releaseSamples = durationSamples - attackSamples - 1;
+    amplitudeIncrement = grainAmplitude / (float) attackSamples;
 }
 
 void GrainEnvelope::processNextBlock(juce::AudioSampleBuffer& bufferToProcess, int startSample, int numSamples)
@@ -140,13 +141,16 @@ void GrainEnvelope::processNextBlock(juce::AudioSampleBuffer& bufferToProcess, i
 
     while(--numSamples >= 0)
     {
-        amplitude += slope;
         *outL++ *= amplitude;
         if(outR != nullptr)
         {
             *outR++ *= amplitude;
         }
-        slope += curve;
+        
+        if (currentSample == attackSamples)
+            amplitudeIncrement = -(grainAmplitude / (float) releaseSamples);
+        amplitude += amplitudeIncrement;
+        currentSample++;
     }
 }
 
@@ -158,9 +162,7 @@ MultigrainVoice::MultigrainVoice(juce::AudioProcessorValueTreeState& apvts, Mult
       sound(sound)
 {
     // init grain array
-    auto maxDuration = apvts.getParameter("Grain Duration")->getNormalisableRange().getRange().getEnd();
-    auto maxRate = apvts.getParameter("Grain Rate")->getNormalisableRange().getRange().getEnd();
-    for(int i = 0; i < maxDuration*maxRate; i++)
+    for(int i = 0; i < 8; i++)
         grains.add(new Grain(sound));
 }
 
@@ -173,20 +175,18 @@ bool MultigrainVoice::canPlaySound(juce::SynthesiserSound* sound)
 
 void MultigrainVoice::startNote(int midiNoteNumber, float velocity, juce::SynthesiserSound* s, int /*currentPitchWheelPosition*/)
 {
-    // do things to start the note (envelope etc)
     if (auto* sound = dynamic_cast<const MultigrainSound*>(s))
     {
         pitchRatio = std::pow(2.0, (midiNoteNumber - sound->midiRootNote) / 12.0)
             *sound->sourceSampleRate / getSampleRate();
 
-        sourceSamplePosition = apvts.getParameter("Position")->getValue() * sound->length;
+        currentNoteInHertz = juce::MidiMessage::getMidiNoteInHertz(midiNoteNumber);
+        samplesTillNextOnset = 0;
 
         lgain = velocity;
         rgain = velocity;
-
-        samplesTillNextOnset = 0;
         
-        adsr.setSampleRate(sound->sourceSampleRate);
+        adsr.setSampleRate(getSampleRate());
         adsr.setParameters(sound->params);
         adsr.noteOn();
     }
@@ -211,8 +211,17 @@ void MultigrainVoice::controllerMoved(int, int) {}
 
 void MultigrainVoice::renderNextBlock(juce::AudioSampleBuffer& outputBuffer, int startSample, int numSamples)
 {
+    if (!isVoiceActive())
+        return;
+
     if (auto* playingSound = static_cast<MultigrainSound*> (getCurrentlyPlayingSound().get()))
     {
+        auto grainDurationFactor = apvts.getRawParameterValue("Grain Duration")->load();
+        int numGrains = apvts.getRawParameterValue("Num Grains")->load();
+        auto grainDurationSamples = juce::roundDoubleToInt(
+                getSampleRate() * grainDurationFactor / (currentNoteInHertz*numGrains)
+        ); // TODO make samplesTillNextOnset floating point
+        
         // Render all active grains
         for(Grain* grain : grains)
             grain->renderNextBlock(outputBuffer, startSample, numSamples);
@@ -220,23 +229,26 @@ void MultigrainVoice::renderNextBlock(juce::AudioSampleBuffer& outputBuffer, int
         // Check if new grains need to be activated
         while (samplesTillNextOnset < numSamples)
         {
-            Grain& grain = activateNextGrain();
+            Grain& grain = activateNextGrain(apvts.getParameter("Position")->getValue(), grainDurationSamples);
             grain.renderNextBlock(outputBuffer, startSample + samplesTillNextOnset, numSamples - samplesTillNextOnset);
-            samplesTillNextOnset += (unsigned int) (1/apvts.getRawParameterValue("Grain Rate")->load()*getSampleRate()); // TODO allow randomness here
+            samplesTillNextOnset += grainDurationSamples; // TODO allow randomness here
         }
 
         samplesTillNextOnset -= numSamples;
 
         adsr.applyEnvelopeToBuffer(outputBuffer, startSample, numSamples);
+
+        if (!adsr.isActive())
+            clearCurrentNote();
     }
 }
 
-Grain& MultigrainVoice::activateNextGrain()
+Grain& MultigrainVoice::activateNextGrain(double sourcePosition, int grainDurationInSamples)
 {
     Grain* grain = grains[nextGrainToActivateIndex];
     grains[nextGrainToActivateIndex]->activate(
-        apvts.getRawParameterValue("Grain Duration")->load()*getSampleRate(),
-        apvts.getParameter("Position")->getValue()*sound.getAudioData()->getNumSamples(),
+        grainDurationInSamples,
+        sourcePosition,
         pitchRatio,
         1.f // TODO allow randomization of this value
     );
@@ -253,11 +265,6 @@ SynthAudioSource::SynthAudioSource(juce::MidiKeyboardState& keyboardState, juce:
       apvts(apvts) {}
 
 SynthAudioSource::~SynthAudioSource(){}
-
-void SynthAudioSource::setUsingSineWaveSound()
-{
-    synth.clearSounds();
-}
 
 void SynthAudioSource::prepareToPlay(int /*samplesPerBlockExpected*/, double sampleRate)
 {
@@ -280,9 +287,9 @@ juce::Synthesiser& SynthAudioSource::getSynth()
     return synth;
 }
 
-void SynthAudioSource::initSynthAudioSource(MultigrainSound* sound)
+void SynthAudioSource::init(MultigrainSound* sound)
 {
     synth.addSound(sound);
-    for (int i = 0; i < 2; i++)
+    for (int i = 0; i < 1; i++)
         synth.addVoice(new MultigrainVoice(apvts, *sound));
 }
