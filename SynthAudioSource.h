@@ -45,22 +45,6 @@ private:
 };
 
 /**
- * Write samples from sourceData to buffer according to pitch ratio.
- */
-class GrainSource
-{
-public:
-    GrainSource(MultigrainSound& sourceData);
-    void processNextBlock(juce::AudioSampleBuffer& bufferToProcess, int startSample, int numSamples); // write information about pitch here
-    void init(double startPosition, double pitchRatio);
-
-private:
-    double pitchRatio;
-    double sourceSamplePosition;
-    MultigrainSound& sourceData;
-};
-
-/**
  * Process an incoming buffer by applying the envelope.
  */
 class GrainEnvelope
@@ -68,6 +52,7 @@ class GrainEnvelope
 public:
     void processNextBlock(juce::AudioSampleBuffer& bufferToProcess, int startSample, int numSamples);
     void init(int durationSamples, float grainAmplitude);
+    float getNextSample();
 private:
     float amplitude;
     float grainAmplitude;
@@ -79,6 +64,24 @@ private:
 };
 
 /**
+ * Write samples from sourceData to buffer according to pitch ratio.
+ */
+class GrainSource
+{
+public:
+    GrainSource(MultigrainSound& sourceData, GrainEnvelope& env);
+    void processNextBlock(juce::AudioSampleBuffer& bufferToProcess, int startSample, int numSamples); // write information about pitch here
+    void init(double startPosition, double pitchRatio);
+
+private:
+    GrainEnvelope& env;
+    double pitchRatio;
+    double sourceSamplePosition;
+    MultigrainSound& sourceData;
+};
+
+
+/**
  * Applies envelope to source. Deactivates itself when completed.
  */
 class Grain
@@ -87,11 +90,12 @@ public:
     Grain(MultigrainSound& sound);
     void renderNextBlock(juce::AudioSampleBuffer& outputBuffer, int startSample, int numSamples);
     void activate(int durationSamples, double sourcePosition, double pitchRatio, float grainAmplitude);
-private:
-    GrainSource source;
-    GrainEnvelope envelope;
-
+    void deactivate();
     bool isActive;
+private:
+    GrainEnvelope envelope;
+    GrainSource source;
+
     int samplesRemaining;
 };
 
@@ -115,12 +119,12 @@ public:
     void renderNextBlock(juce::AudioSampleBuffer& outputBuffer, int startSample, int numSamples) override;
 private:
     Grain& activateNextGrain(double sourcePosition, int grainDurationInSamples);
+    void deactivateGrains();
     double pitchRatio = 0;
     double sourceSamplePosition = 0;
     float lgain = 0, rgain = 0;
 
     double currentNoteInHertz;
-    int numGrains;
 
     int samplesTillNextOnset;
     unsigned int nextGrainToActivateIndex;
