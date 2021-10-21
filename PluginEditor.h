@@ -17,14 +17,20 @@ struct LookAndFeel : juce::LookAndFeel_V4
 
 struct RotarySliderWithLabels : juce::Slider
 {
-    RotarySliderWithLabels(juce::RangedAudioParameter& rap, const juce::String& unitSuffix, double skewFactor=1., bool symmetricSkew=false)
+    enum Type
+    {
+        DEFAULT,
+        HIGHVALUEINT
+    };
+
+    RotarySliderWithLabels(juce::RangedAudioParameter& rap, const juce::String& unitSuffix, RotarySliderWithLabels::Type type = RotarySliderWithLabels::DEFAULT)
         : juce::Slider(juce::Slider::SliderStyle::RotaryVerticalDrag,
                                         juce::Slider::TextEntryBoxPosition::NoTextBox),
           param(&rap),
-          suffix(unitSuffix)
+          suffix(unitSuffix),
+          type(type)
     {
         setLookAndFeel(&lnf);
-        setSkewFactor(skewFactor, symmetricSkew);
     }
 
     ~RotarySliderWithLabels()
@@ -44,8 +50,10 @@ struct RotarySliderWithLabels : juce::Slider
     juce::Rectangle<int> getSliderBounds() const;
     int getTextHeight() const { return 14; }
     juce::String getDisplayString() const;
+
 private:
     LookAndFeel lnf;
+    RotarySliderWithLabels::Type type;
 
     juce::RangedAudioParameter* param;
     juce::String suffix;
@@ -85,16 +93,24 @@ private:
     AudioPluginAudioProcessor& processorRef;
     
     // --------------------------------------------------------------
-    // Components (dont forget to add to getComps)
+    // Components (dont forget to add to getComps!)
     // --------------------------------------------------------------
     RotarySliderWithLabels numGrainsSlider,
                            grainDurationSlider,
-                           positionSlider;
+                           positionSlider,
+                           synthAttackSlider,
+                           synthDecaySlider,
+                           synthSustainSlider,
+                           synthReleaseSlider;
 
     juce::MidiKeyboardComponent keyboardComponent;
+    std::vector<juce::Component*> getComps();
+
+    // ---------------------------------------------------------------
     juce::AudioThumbnail audioThumbnail;
 
-    std::vector<juce::Component*> getComps();
+    // ---------------------------------------------------------------
+    juce::Rectangle<int> waveformArea;
     // ---------------------------------------------------------------
 
     using APVTS = juce::AudioProcessorValueTreeState;
@@ -102,7 +118,11 @@ private:
 
     Attachment numGrainsSliderAttachment,
                grainDurationSliderAttachment,
-               positionSliderAttachment;
+               positionSliderAttachment,
+               synthAttackSliderAttachment,
+               synthDecaySliderAttachment,
+               synthSustainSliderAttachment,
+               synthReleaseSliderAttachment;
     
     juce::AudioFormatManager formatManager;
 

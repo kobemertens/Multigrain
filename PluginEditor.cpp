@@ -15,8 +15,15 @@ void LookAndFeel::drawRotarySlider (juce::Graphics& g,
     g.setColour(Colours::white);
     g.fillEllipse(bounds);
 
-    g.setColour(Colours::black);
-    g.drawEllipse(bounds, 1.f);
+    auto sliderBorderThickness = 10.f;
+    g.setColour(Colours::royalblue);
+    g.drawEllipse(
+        bounds.withSizeKeepingCentre(
+            bounds.getWidth() - sliderBorderThickness, 
+            bounds.getHeight() - sliderBorderThickness
+        ),
+        sliderBorderThickness
+    );
 
     if(auto* rswl = dynamic_cast<RotarySliderWithLabels*>(&slider))
     {
@@ -24,10 +31,10 @@ void LookAndFeel::drawRotarySlider (juce::Graphics& g,
         Path p;
 
         Rectangle<float> r;
-        r.setLeft(center.getX() - 2);
-        r.setRight(center.getX() + 2);
-        r.setTop(bounds.getY());
-        r.setBottom(center.getY() - rswl->getTextHeight() * 1.5);
+        r.setLeft(center.getX() - 3);
+        r.setRight(center.getX() + 3);
+        r.setTop(bounds.getY() + sliderBorderThickness + 4);
+        r.setBottom(center.getY() - rswl->getTextHeight() * 1.5f);
         p.addRoundedRectangle(r, 2.f);
 
         jassert(rotaryStartAngle < rotaryEndAngle);
@@ -139,7 +146,18 @@ juce::String RotarySliderWithLabels::getDisplayString() const
     else if (auto* intParam = dynamic_cast<juce::AudioParameterInt*>(param))
     {
         int val = getValue();
+        juce::String abbrev;
+        if (type == RotarySliderWithLabels::HIGHVALUEINT)
+        {
+            if (val >= 1000)
+            {
+                val = (int) ((float) val / 1000.f);
+                abbrev = juce::String("k");
+            }
+        }
         str = juce::String(val);
+        if (abbrev.isNotEmpty())
+            str << abbrev;
     }
     else
     {
@@ -161,9 +179,17 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     numGrainsSlider(*processorRef.apvts.getParameter("Num Grains"), ""),
     grainDurationSlider(*processorRef.apvts.getParameter("Grain Duration"), ""),
     positionSlider(*processorRef.apvts.getParameter("Position"), "%"),
+    synthAttackSlider(*processorRef.apvts.getParameter("Synth Attack"), "ms", RotarySliderWithLabels::HIGHVALUEINT),
+    synthDecaySlider(*processorRef.apvts.getParameter("Synth Decay"), "ms", RotarySliderWithLabels::HIGHVALUEINT),
+    synthSustainSlider(*processorRef.apvts.getParameter("Synth Sustain"), "%"),
+    synthReleaseSlider(*processorRef.apvts.getParameter("Synth Release"), "ms", RotarySliderWithLabels::HIGHVALUEINT),
     numGrainsSliderAttachment(processorRef.apvts, "Num Grains", numGrainsSlider),
     grainDurationSliderAttachment(processorRef.apvts, "Grain Duration", grainDurationSlider),
     positionSliderAttachment(processorRef.apvts, "Position", positionSlider),
+    synthAttackSliderAttachment(processorRef.apvts, "Synth Attack", synthAttackSlider),
+    synthDecaySliderAttachment(processorRef.apvts, "Synth Decay", synthDecaySlider),
+    synthSustainSliderAttachment(processorRef.apvts, "Synth Sustain", synthSustainSlider),
+    synthReleaseSliderAttachment(processorRef.apvts, "Synth Release", synthReleaseSlider),
     keyboardComponent(processorRef.keyboardState, juce::MidiKeyboardComponent::horizontalKeyboard),
     audioThumbnailCache(5),
     audioThumbnail(512, formatManager, audioThumbnailCache)
@@ -177,6 +203,19 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     positionSlider.labels.add({0.f, "0 %"});
     positionSlider.labels.add({1.f, "100 %"});
     positionSlider.addListener(this);
+
+    synthAttackSlider.labels.add({0.f, "30 ms"});
+    synthAttackSlider.labels.add({1.f, "30k ms"});
+
+    synthDecaySlider.labels.add({0.f, "30 ms"});
+    synthDecaySlider.labels.add({1.f, "30k ms"});
+
+    synthSustainSlider.labels.add({0.f, "0 %"});
+    synthSustainSlider.labels.add({.5f, "50 %"});
+    synthSustainSlider.labels.add({1.f, "100 %"});
+
+    synthReleaseSlider.labels.add({0.f, "30 ms"});
+    synthReleaseSlider.labels.add({1.f, "30k ms"});
 
     for (auto* comp : getComps())
     {
@@ -208,12 +247,10 @@ void AudioPluginAudioProcessorEditor::paint (juce::Graphics& g)
     // (Our component is opaque, so we must completely fill the background with a solid colour)
     // g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
     g.fillAll(juce::Colours::black);
-    auto bounds = getLocalBounds();
-    auto thumbnailBounds = bounds.removeFromTop(bounds.getHeight() * 0.5);
     if (audioThumbnail.getNumChannels() == 0)
-        paintIfNoFileLoaded(g, thumbnailBounds);
+        paintIfNoFileLoaded(g, waveformArea);
     else
-        paintIfFileLoaded(g, thumbnailBounds);
+        paintIfFileLoaded(g, waveformArea);
 
     // g.setColour (juce::Colours::white);
     // g.setFont (15.0f);
@@ -235,11 +272,14 @@ void AudioPluginAudioProcessorEditor::paintIfFileLoaded (juce::Graphics& g, cons
     g.fillRect(thumbnailBounds);
     g.setColour(juce::Colours::black);
 
-    audioThumbnail.drawChannels(g,
-                                thumbnailBounds,
-                                0.0,
-                                audioThumbnail.getTotalLength(),
-                                1.0f);
+    audioThumbnail.drawChannel(
+        g,
+        thumbnailBounds,
+        0.0,
+        audioThumbnail.getTotalLength(),
+        0,
+        1.f
+    );
 
     // draw position line
     g.setColour(juce::Colours::black);
@@ -253,18 +293,30 @@ void AudioPluginAudioProcessorEditor::paintIfFileLoaded (juce::Graphics& g, cons
 void AudioPluginAudioProcessorEditor::resized()
 {
     auto bounds = getLocalBounds();
-    auto waveFormArea = bounds.removeFromTop(bounds.getHeight() * 0.5);
-    auto knobArea = bounds.removeFromTop(bounds.getHeight() * 0.7);
+
+    waveformArea = bounds.removeFromTop(bounds.getHeight() * 0.25);
+    auto knobArea = bounds.removeFromTop(bounds.getHeight() * 0.33);
+    auto adrsArea = bounds.removeFromTop(bounds.getHeight() * 0.5);
     auto keyboardArea = bounds;
 
     auto numGrainsArea = knobArea.removeFromLeft(knobArea.getWidth() * 0.33);
     auto grainDurationArea = knobArea.removeFromLeft(knobArea.getWidth() * 0.5);
     auto durationArea = knobArea;
 
+    auto synthAttackArea = adrsArea.removeFromLeft(adrsArea.getWidth() * 0.25);
+    auto synthDecayArea = adrsArea.removeFromLeft(adrsArea.getWidth()*0.33);
+    auto synthSustainArea = adrsArea.removeFromLeft(adrsArea.getWidth()*0.5);
+    auto synthReleaseArea = adrsArea;
+
     numGrainsSlider.setBounds(numGrainsArea);
     grainDurationSlider.setBounds(grainDurationArea);
     positionSlider.setBounds(durationArea);
     keyboardComponent.setBounds(keyboardArea);
+
+    synthAttackSlider.setBounds(synthAttackArea);
+    synthDecaySlider.setBounds(synthDecayArea);
+    synthSustainSlider.setBounds(synthSustainArea);
+    synthReleaseSlider.setBounds(synthReleaseArea);
 }
 
 std::vector<juce::Component*> AudioPluginAudioProcessorEditor::getComps()
@@ -274,7 +326,11 @@ std::vector<juce::Component*> AudioPluginAudioProcessorEditor::getComps()
         &numGrainsSlider,
         &grainDurationSlider,
         &positionSlider,
-        &keyboardComponent
+        &keyboardComponent,
+        &synthAttackSlider,
+        &synthDecaySlider,
+        &synthSustainSlider,
+        &synthReleaseSlider
     };
 }
 

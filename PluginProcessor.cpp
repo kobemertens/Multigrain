@@ -194,6 +194,30 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
                                                            juce::NormalisableRange<float>(0.f, 1.f, .01f, 1.f), 
                                                            0.f));
 
+    layout.add(std::make_unique<juce::AudioParameterInt>("Synth Attack", 
+                                                         "Synth Attack", 
+                                                         0,
+                                                         30000,
+                                                         30));
+
+    layout.add(std::make_unique<juce::AudioParameterInt>("Synth Decay", 
+                                                         "Synth Decay", 
+                                                         0,
+                                                         30000,
+                                                         0));
+
+    layout.add(std::make_unique<juce::AudioParameterInt>("Synth Sustain", 
+                                                         "Synth Sustain", 
+                                                         0,
+                                                         100,
+                                                         100));
+
+    layout.add(std::make_unique<juce::AudioParameterInt>("Synth Release", 
+                                                         "Synth Release", 
+                                                         0,
+                                                         30000,
+                                                         30));
+
     return layout;
 }
 
