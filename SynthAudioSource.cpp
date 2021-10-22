@@ -5,8 +5,6 @@ MultigrainSound::MultigrainSound(const juce::String& soundName,
                                  juce::AudioFormatReader& source,
                                  const juce::BigInteger& notes,
                                  int midiNoteForNormalPitch,
-                                 double attackTimeSecs,
-                                 double releaseTimeSecs,
                                  double maxSampleLengthSeconds)
     : name(soundName),
       sourceSampleRate(source.sampleRate),
@@ -21,9 +19,6 @@ MultigrainSound::MultigrainSound(const juce::String& soundName,
         data.reset (new juce::AudioBuffer<float> (juce::jmin (2, (int) source.numChannels), length + 4));
 
         source.read (data.get(), 0, length + 4, 0, true, true);
-
-        params.attack  = static_cast<float> (attackTimeSecs);
-        params.release = static_cast<float> (releaseTimeSecs);
     }
 }
 
@@ -204,7 +199,13 @@ void MultigrainVoice::startNote(int midiNoteNumber, float velocity, juce::Synthe
         rgain = velocity;
         
         adsr.setSampleRate(getSampleRate());
-        adsr.setParameters(sound->params);
+        juce::ADSR::Parameters params(
+            (float) apvts.getRawParameterValue("Synth Attack")->load()  / 1000.f,
+            (float) apvts.getRawParameterValue("Synth Decay")->load()   / 1000.f,
+            (float) apvts.getRawParameterValue("Synth Sustain")->load() / 100.f,
+            (float) apvts.getRawParameterValue("Synth Release")->load() / 1000.f
+        );
+        adsr.setParameters(params);
         adsr.noteOn();
     }
 }

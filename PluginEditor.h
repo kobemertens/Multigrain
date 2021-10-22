@@ -15,6 +15,27 @@ struct LookAndFeel : juce::LookAndFeel_V4
                                        juce::Slider&) override;
 };
 
+class DraggableAudioThumbnail : public juce::Component,
+                                public juce::Slider::Listener,
+                                public juce::ChangeListener
+{
+public:
+    DraggableAudioThumbnail(AudioPluginAudioProcessor& processorRef, int sourceSamplesPerThumbnailSample, juce::AudioFormatManager& formatManager, juce::AudioThumbnailCache& cacheToUse);
+    ~DraggableAudioThumbnail();
+    void paint(juce::Graphics& g) override;
+    void sliderValueChanged (juce::Slider *slider) override;
+    void setSource(juce::InputSource* newSource);
+    void changeListenerCallback(juce::ChangeBroadcaster* source) override;
+    void mouseDown(const juce::MouseEvent& event) override;
+    void mouseDrag(const juce::MouseEvent& event) override;
+private:
+    void paintIfNoFileLoaded (juce::Graphics& g, const juce::Rectangle<int>& thumbnailBounds);
+    void paintIfFileLoaded (juce::Graphics& g, const juce::Rectangle<int>& thumbnailBounds);
+    void setCursorAtPoint(const juce::Point<int>& point);
+    juce::AudioThumbnail audioThumbnail;
+    AudioPluginAudioProcessor& processorRef;
+};
+
 struct RotarySliderWithLabels : juce::Slider
 {
     enum Type
@@ -61,9 +82,7 @@ private:
 
 //==============================================================================
 class AudioPluginAudioProcessorEditor  : public juce::AudioProcessorEditor,
-                                         public juce::FileDragAndDropTarget,
-                                         private juce::ChangeListener,
-                                         private juce::Slider::Listener
+                                         public juce::FileDragAndDropTarget
                                          
 {
 public:
@@ -81,13 +100,7 @@ public:
     void fileDragExit (const juce::StringArray &files) override;
     void filesDropped(const juce::StringArray &files, int x, int y) override;
 
-    // Slider::Listener functions
-    void sliderValueChanged(juce::Slider* slider) override;
-
 private:
-    void changeListenerCallback(juce::ChangeBroadcaster* source) override;
-    void paintIfNoFileLoaded (juce::Graphics& g, const juce::Rectangle<int>& thumbnailBounds);
-    void paintIfFileLoaded (juce::Graphics& g, const juce::Rectangle<int>& thumbnailBounds);
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
     AudioPluginAudioProcessor& processorRef;
@@ -106,8 +119,6 @@ private:
     juce::MidiKeyboardComponent keyboardComponent;
     std::vector<juce::Component*> getComps();
 
-    // ---------------------------------------------------------------
-    juce::AudioThumbnail audioThumbnail;
 
     // ---------------------------------------------------------------
     juce::Rectangle<int> waveformArea;
@@ -127,6 +138,8 @@ private:
     juce::AudioFormatManager formatManager;
 
     juce::AudioThumbnailCache audioThumbnailCache;
+    // ---------------------------------------------------------------
+    DraggableAudioThumbnail audioThumbnailComponent;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessorEditor)
 };

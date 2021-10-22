@@ -173,91 +173,62 @@ juce::String RotarySliderWithLabels::getDisplayString() const
     return str;
 }
 
-//==============================================================================
-AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAudioProcessor& p)
-    : AudioProcessorEditor (&p), processorRef (p),
-    numGrainsSlider(*processorRef.apvts.getParameter("Num Grains"), ""),
-    grainDurationSlider(*processorRef.apvts.getParameter("Grain Duration"), ""),
-    positionSlider(*processorRef.apvts.getParameter("Position"), "%"),
-    synthAttackSlider(*processorRef.apvts.getParameter("Synth Attack"), "ms", RotarySliderWithLabels::HIGHVALUEINT),
-    synthDecaySlider(*processorRef.apvts.getParameter("Synth Decay"), "ms", RotarySliderWithLabels::HIGHVALUEINT),
-    synthSustainSlider(*processorRef.apvts.getParameter("Synth Sustain"), "%"),
-    synthReleaseSlider(*processorRef.apvts.getParameter("Synth Release"), "ms", RotarySliderWithLabels::HIGHVALUEINT),
-    numGrainsSliderAttachment(processorRef.apvts, "Num Grains", numGrainsSlider),
-    grainDurationSliderAttachment(processorRef.apvts, "Grain Duration", grainDurationSlider),
-    positionSliderAttachment(processorRef.apvts, "Position", positionSlider),
-    synthAttackSliderAttachment(processorRef.apvts, "Synth Attack", synthAttackSlider),
-    synthDecaySliderAttachment(processorRef.apvts, "Synth Decay", synthDecaySlider),
-    synthSustainSliderAttachment(processorRef.apvts, "Synth Sustain", synthSustainSlider),
-    synthReleaseSliderAttachment(processorRef.apvts, "Synth Release", synthReleaseSlider),
-    keyboardComponent(processorRef.keyboardState, juce::MidiKeyboardComponent::horizontalKeyboard),
-    audioThumbnailCache(5),
-    audioThumbnail(512, formatManager, audioThumbnailCache)
+DraggableAudioThumbnail::DraggableAudioThumbnail(AudioPluginAudioProcessor& processorRef, int sourceSamplesPerThumbnailSample, juce::AudioFormatManager& formatManager, juce::AudioThumbnailCache& cacheToUse)
+    : audioThumbnail(sourceSamplesPerThumbnailSample, formatManager, cacheToUse),
+      processorRef(processorRef)
 {
-    numGrainsSlider.labels.add({0.f, "1"});
-    numGrainsSlider.labels.add({1.f, "8"});
-
-    grainDurationSlider.labels.add({0.f, "1"});
-    grainDurationSlider.labels.add({1.f, "1000"});
-
-    positionSlider.labels.add({0.f, "0 %"});
-    positionSlider.labels.add({1.f, "100 %"});
-    positionSlider.addListener(this);
-
-    synthAttackSlider.labels.add({0.f, "30 ms"});
-    synthAttackSlider.labels.add({1.f, "30k ms"});
-
-    synthDecaySlider.labels.add({0.f, "30 ms"});
-    synthDecaySlider.labels.add({1.f, "30k ms"});
-
-    synthSustainSlider.labels.add({0.f, "0 %"});
-    synthSustainSlider.labels.add({.5f, "50 %"});
-    synthSustainSlider.labels.add({1.f, "100 %"});
-
-    synthReleaseSlider.labels.add({0.f, "30 ms"});
-    synthReleaseSlider.labels.add({1.f, "30k ms"});
-
-    for (auto* comp : getComps())
-    {
-        addAndMakeVisible(comp);
-    }
-
-    setSize (600, 400);
-
-    formatManager.registerBasicFormats();
     audioThumbnail.addChangeListener(this);
 }
 
-AudioPluginAudioProcessorEditor::~AudioPluginAudioProcessorEditor()
+DraggableAudioThumbnail::~DraggableAudioThumbnail()
 {
     audioThumbnail.removeChangeListener(this);
     audioThumbnail.setSource(nullptr); // No idea why this is needed but does not work otherwise
-
-    positionSlider.removeListener(this);
 }
 
-void AudioPluginAudioProcessorEditor::changeListenerCallback(juce::ChangeBroadcaster* source)
+void DraggableAudioThumbnail::paint(juce::Graphics& g)
+{
+    if (audioThumbnail.getNumChannels() == 0)
+        paintIfNoFileLoaded(g, getLocalBounds());
+    else
+        paintIfFileLoaded(g, getLocalBounds());
+}
+
+void DraggableAudioThumbnail::sliderValueChanged (juce::Slider *slider)
+{
+    repaint();
+}
+
+void DraggableAudioThumbnail::setSource(juce::InputSource* newSource)
+{
+    audioThumbnail.setSource(newSource);
+}
+
+void DraggableAudioThumbnail::changeListenerCallback(juce::ChangeBroadcaster* source)
 {
     if (source == &audioThumbnail) repaint();
 }
 
-//==============================================================================
-void AudioPluginAudioProcessorEditor::paint (juce::Graphics& g)
+void DraggableAudioThumbnail::mouseDown(const juce::MouseEvent& event)
 {
-    // (Our component is opaque, so we must completely fill the background with a solid colour)
-    // g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
-    g.fillAll(juce::Colours::black);
-    if (audioThumbnail.getNumChannels() == 0)
-        paintIfNoFileLoaded(g, waveformArea);
-    else
-        paintIfFileLoaded(g, waveformArea);
-
-    // g.setColour (juce::Colours::white);
-    // g.setFont (15.0f);
-    // g.drawFittedText ("Hello World!", getLocalBounds(), juce::Justification::centred, 1);
+    if(audioThumbnail.getNumChannels() > 0)
+        setCursorAtPoint(event.getPosition());
 }
 
-void AudioPluginAudioProcessorEditor::paintIfNoFileLoaded (juce::Graphics& g, const juce::Rectangle<int>& thumbnailBounds)
+void DraggableAudioThumbnail::mouseDrag(const juce::MouseEvent& event)
+{
+    if (audioThumbnail.getNumChannels() > 0)
+        setCursorAtPoint(event.getPosition());
+}
+
+void DraggableAudioThumbnail::setCursorAtPoint(const juce::Point<int>& point)
+{
+    auto x = point.getX();
+    processorRef.apvts.getParameter("Position")->setValue((float) x / (float) getWidth());
+    repaint();
+}
+
+void DraggableAudioThumbnail::paintIfNoFileLoaded (juce::Graphics& g, const juce::Rectangle<int>& thumbnailBounds)
 {
     g.setColour(juce::Colours::grey);
     g.fillRect(thumbnailBounds);
@@ -265,7 +236,7 @@ void AudioPluginAudioProcessorEditor::paintIfNoFileLoaded (juce::Graphics& g, co
     g.drawFittedText("Drag .wav file here", thumbnailBounds, juce::Justification::centred, 1);
 }
 
-void AudioPluginAudioProcessorEditor::paintIfFileLoaded (juce::Graphics& g, const juce::Rectangle<int>& thumbnailBounds)
+void DraggableAudioThumbnail::paintIfFileLoaded (juce::Graphics& g, const juce::Rectangle<int>& thumbnailBounds)
 {
     auto bounds = getLocalBounds();
     g.setColour(juce::Colours::white);
@@ -290,6 +261,77 @@ void AudioPluginAudioProcessorEditor::paintIfFileLoaded (juce::Graphics& g, cons
     );
 }
 
+//==============================================================================
+AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAudioProcessor& p)
+    : AudioProcessorEditor (&p), processorRef (p),
+    numGrainsSlider(*processorRef.apvts.getParameter("Num Grains"), ""),
+    grainDurationSlider(*processorRef.apvts.getParameter("Grain Duration"), ""),
+    positionSlider(*processorRef.apvts.getParameter("Position"), "%"),
+    synthAttackSlider(*processorRef.apvts.getParameter("Synth Attack"), "ms", RotarySliderWithLabels::HIGHVALUEINT),
+    synthDecaySlider(*processorRef.apvts.getParameter("Synth Decay"), "ms", RotarySliderWithLabels::HIGHVALUEINT),
+    synthSustainSlider(*processorRef.apvts.getParameter("Synth Sustain"), "%"),
+    synthReleaseSlider(*processorRef.apvts.getParameter("Synth Release"), "ms", RotarySliderWithLabels::HIGHVALUEINT),
+    numGrainsSliderAttachment(processorRef.apvts, "Num Grains", numGrainsSlider),
+    grainDurationSliderAttachment(processorRef.apvts, "Grain Duration", grainDurationSlider),
+    positionSliderAttachment(processorRef.apvts, "Position", positionSlider),
+    synthAttackSliderAttachment(processorRef.apvts, "Synth Attack", synthAttackSlider),
+    synthDecaySliderAttachment(processorRef.apvts, "Synth Decay", synthDecaySlider),
+    synthSustainSliderAttachment(processorRef.apvts, "Synth Sustain", synthSustainSlider),
+    synthReleaseSliderAttachment(processorRef.apvts, "Synth Release", synthReleaseSlider),
+    keyboardComponent(processorRef.keyboardState, juce::MidiKeyboardComponent::horizontalKeyboard),
+    audioThumbnailCache(5),
+    audioThumbnailComponent(processorRef, 512, formatManager, audioThumbnailCache)
+{
+    numGrainsSlider.labels.add({0.f, "1"});
+    numGrainsSlider.labels.add({1.f, "8"});
+
+    grainDurationSlider.labels.add({0.f, "1"});
+    grainDurationSlider.labels.add({1.f, "1000"});
+
+    positionSlider.labels.add({0.f, "0 %"});
+    positionSlider.labels.add({1.f, "100 %"});
+    positionSlider.addListener(&audioThumbnailComponent);
+
+    synthAttackSlider.labels.add({0.f, "30 ms"});
+    synthAttackSlider.labels.add({1.f, "30k ms"});
+
+    synthDecaySlider.labels.add({0.f, "30 ms"});
+    synthDecaySlider.labels.add({1.f, "30k ms"});
+
+    synthSustainSlider.labels.add({0.f, "0 %"});
+    synthSustainSlider.labels.add({.5f, "50 %"});
+    synthSustainSlider.labels.add({1.f, "100 %"});
+
+    synthReleaseSlider.labels.add({0.f, "30 ms"});
+    synthReleaseSlider.labels.add({1.f, "30k ms"});
+
+    for (auto* comp : getComps())
+    {
+        addAndMakeVisible(comp);
+    }
+
+    setSize (600, 400);
+
+    formatManager.registerBasicFormats();
+}
+
+AudioPluginAudioProcessorEditor::~AudioPluginAudioProcessorEditor()
+{
+    positionSlider.removeListener(&audioThumbnailComponent);
+}
+
+//==============================================================================
+void AudioPluginAudioProcessorEditor::paint (juce::Graphics& g)
+{
+    // (Our component is opaque, so we must completely fill the background with a solid colour)
+    // g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
+    g.fillAll(juce::Colours::black);
+
+    // g.setColour (juce::Colours::white);
+    // g.setFont (15.0f);
+    // g.drawFittedText ("Hello World!", getLocalBounds(), juce::Justification::centred, 1);
+}
+
 void AudioPluginAudioProcessorEditor::resized()
 {
     auto bounds = getLocalBounds();
@@ -312,6 +354,7 @@ void AudioPluginAudioProcessorEditor::resized()
     grainDurationSlider.setBounds(grainDurationArea);
     positionSlider.setBounds(durationArea);
     keyboardComponent.setBounds(keyboardArea);
+    audioThumbnailComponent.setBounds(waveformArea);
 
     synthAttackSlider.setBounds(synthAttackArea);
     synthDecaySlider.setBounds(synthDecayArea);
@@ -330,7 +373,8 @@ std::vector<juce::Component*> AudioPluginAudioProcessorEditor::getComps()
         &synthAttackSlider,
         &synthDecaySlider,
         &synthSustainSlider,
-        &synthReleaseSlider
+        &synthReleaseSlider,
+        &audioThumbnailComponent
     };
 }
 
@@ -357,8 +401,8 @@ void AudioPluginAudioProcessorEditor::filesDropped(const juce::StringArray &file
             auto duration = (float) reader->lengthInSamples / reader->sampleRate;
             if (duration < 10)
             {
-                processorRef.getSynthAudioSource().init(new MultigrainSound(string, *reader, 0, 60, 0.02, 0.02, 10));
-                audioThumbnail.setSource(new juce::FileInputSource(file));
+                processorRef.getSynthAudioSource().init(new MultigrainSound(string, *reader, 0, 60, 10));
+                audioThumbnailComponent.setSource(new juce::FileInputSource(file));
             }
             else
             {
@@ -371,9 +415,4 @@ void AudioPluginAudioProcessorEditor::filesDropped(const juce::StringArray &file
             std::cout << "No reader created!" << std::endl;
         }
     }
-}
-
-void AudioPluginAudioProcessorEditor::sliderValueChanged(juce::Slider* slider)
-{
-    repaint();
 }

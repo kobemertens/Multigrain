@@ -13,16 +13,12 @@ public:
                     juce::AudioFormatReader& source,
                     const juce::BigInteger& notes,
                     int midiNoteForNormalPitch,
-                    double attackTimeSecs,
-                    double releaseTimeSecs,
                     double maxSampleLengthSecs);
     ~MultigrainSound() override;
 
     const juce::String& getName() const noexcept { return name; }
 
     juce::AudioSampleBuffer* getAudioData() const noexcept { return data.get(); }
-
-    void setEnvelopeParameters (juce::ADSR::Parameters parametersToUse)    { params = parametersToUse; }
 
     //==============================================================================
     bool appliesToNote (int midiNoteNumber) override;
@@ -37,8 +33,6 @@ private:
     double sourceSampleRate;
     juce::BigInteger midiNotes;
     int length = 0, midiRootNote = 0;
-
-    juce::ADSR::Parameters params;
 
     JUCE_LEAK_DETECTOR(MultigrainSound);
 
