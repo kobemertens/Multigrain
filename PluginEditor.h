@@ -95,7 +95,7 @@ private:
 
 //==============================================================================
 class AudioPluginAudioProcessorEditor  : public juce::AudioProcessorEditor
-                                         
+
 {
 public:
     explicit AudioPluginAudioProcessorEditor (AudioPluginAudioProcessor&);
@@ -109,7 +109,7 @@ private:
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
     AudioPluginAudioProcessor& processorRef;
-    
+
     // --------------------------------------------------------------
     // Components (dont forget to add to getComps!)
     // --------------------------------------------------------------
@@ -121,6 +121,8 @@ private:
                            synthSustainSlider,
                            synthReleaseSlider;
 
+    juce::ToggleButton reverbToggleButton;
+
     juce::MidiKeyboardComponent keyboardComponent;
     std::vector<juce::Component*> getComps();
 
@@ -130,16 +132,21 @@ private:
     // ---------------------------------------------------------------
 
     using APVTS = juce::AudioProcessorValueTreeState;
-    using Attachment = APVTS::SliderAttachment;
+    using SliderAttachment = APVTS::SliderAttachment;
+    using ButtonAttachment = APVTS::ButtonAttachment;
 
-    Attachment numGrainsSliderAttachment,
+    SliderAttachment numGrainsSliderAttachment,
                grainDurationSliderAttachment,
                positionSliderAttachment,
                synthAttackSliderAttachment,
                synthDecaySliderAttachment,
                synthSustainSliderAttachment,
                synthReleaseSliderAttachment;
-    
+
+    ButtonAttachment reverbToggleButtonAttachment;
+
+
+
     juce::AudioFormatManager formatManager;
 
     juce::AudioThumbnailCache audioThumbnailCache;

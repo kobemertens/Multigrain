@@ -19,7 +19,7 @@ void LookAndFeel::drawRotarySlider (juce::Graphics& g,
     g.setColour(Colours::royalblue);
     g.drawEllipse(
         bounds.withSizeKeepingCentre(
-            bounds.getWidth() - sliderBorderThickness, 
+            bounds.getWidth() - sliderBorderThickness,
             bounds.getHeight() - sliderBorderThickness
         ),
         sliderBorderThickness
@@ -181,7 +181,7 @@ MainAudioThumbnailComponent::MainAudioThumbnailComponent(AudioPluginAudioProcess
       formatManager(formatManager)
 {
     audioThumbnail.addChangeListener(this);
-    setMouseCursor(juce::MouseCursor::CrosshairCursor);
+    setMouseCursor(juce::MouseCursor::IBeamCursor);
 }
 
 MainAudioThumbnailComponent::~MainAudioThumbnailComponent()
@@ -285,20 +285,20 @@ void MainAudioThumbnailComponent::paintIfFileLoaded (juce::Graphics& g, const ju
         bounds.getBottom()
     );
 
-    g.drawLine(
-        bounds.getWidth() * processorRef.apvts.getParameter("Position")->getValue(),
-        8.f,
-        bounds.getWidth() * processorRef.apvts.getParameter("Position")->getValue() + 8,
-        8.f,
-        1.f
-    );
+    // g.drawLine(
+    //     bounds.getWidth() * processorRef.apvts.getParameter("Position")->getValue(),
+    //     8.f,
+    //     bounds.getWidth() * processorRef.apvts.getParameter("Position")->getValue() + 8,
+    //     8.f,
+    //     1.f
+    // );
 
-    g.fillEllipse(
-        bounds.getWidth() * processorRef.apvts.getParameter("Position")->getValue() + 6,
-        6.f,
-        4.f,
-        4.f
-    );
+    // g.fillEllipse(
+    //     bounds.getWidth() * processorRef.apvts.getParameter("Position")->getValue() + 6,
+    //     6.f,
+    //     4.f,
+    //     4.f
+    // );
 }
 
 bool MainAudioThumbnailComponent::isInterestedInFileDrag(const juce::StringArray &/*files*/)
@@ -368,6 +368,7 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     synthDecaySliderAttachment   (processorRef.apvts, "Synth Decay", synthDecaySlider),
     synthSustainSliderAttachment (processorRef.apvts, "Synth Sustain", synthSustainSlider),
     synthReleaseSliderAttachment (processorRef.apvts, "Synth Release", synthReleaseSlider),
+    reverbToggleButtonAttachment (processorRef.apvts, "Reverb Toggle", reverbToggleButton),
 
     keyboardComponent(processorRef.keyboardState, juce::MidiKeyboardComponent::horizontalKeyboard),
     audioThumbnailCache(5),
@@ -430,6 +431,7 @@ void AudioPluginAudioProcessorEditor::resized()
     waveformArea = bounds.removeFromTop(bounds.getHeight() * 0.25);
     auto knobArea = bounds.removeFromTop(bounds.getHeight() * 0.33);
     auto adrsArea = bounds.removeFromTop(bounds.getHeight() * 0.5);
+    auto effectsArea = bounds.removeFromTop(bounds.getHeight() * 0.5);
     auto keyboardArea = bounds;
 
     auto numGrainsArea = knobArea.removeFromLeft(knobArea.getWidth() * 0.33);
@@ -451,6 +453,8 @@ void AudioPluginAudioProcessorEditor::resized()
     synthDecaySlider.setBounds(synthDecayArea);
     synthSustainSlider.setBounds(synthSustainArea);
     synthReleaseSlider.setBounds(synthReleaseArea);
+
+    reverbToggleButton.setBounds(effectsArea);
 }
 
 std::vector<juce::Component*> AudioPluginAudioProcessorEditor::getComps()
@@ -465,6 +469,7 @@ std::vector<juce::Component*> AudioPluginAudioProcessorEditor::getComps()
         &synthDecaySlider,
         &synthSustainSlider,
         &synthReleaseSlider,
-        &audioThumbnailComponent
+        &audioThumbnailComponent,
+        &reverbToggleButton
     };
 }

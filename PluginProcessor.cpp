@@ -11,7 +11,6 @@ AudioPluginAudioProcessor::AudioPluginAudioProcessor()
                        .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
                      #endif
                        ),
-      position(0),
       synthAudioSource(keyboardState, apvts)
 {
 }
@@ -93,6 +92,7 @@ void AudioPluginAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     juce::ignoreUnused (sampleRate, samplesPerBlock);
 
     synthAudioSource.prepareToPlay(samplesPerBlock, sampleRate);
+    reverb.setSampleRate(sampleRate);
 }
 
 void AudioPluginAudioProcessor::releaseResources()
@@ -133,7 +133,7 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     for (const auto metadata : midiMessages)
         keyboardState.processNextMidiEvent(metadata.getMessage());
     // keyboardState.processNextMidiBuffer(midiMessages, 0, buffer.getNumSamples(), false); // does not work because the messages will not be added in the synth
-    
+
     juce::ScopedNoDenormals noDenormals;
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
@@ -144,6 +144,11 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     // TODO: Maybe create a single audiosourcechannelinfo and reuse it
     juce::AudioSourceChannelInfo ci (buffer);
     synthAudioSource.getNextAudioBlock(ci);
+    float* outL = buffer.getWritePointer (0, 0);
+    float* outR = buffer.getWritePointer (1, 0);
+
+    if (apvts.getParameter("Reverb Toggle")->getValue())
+        reverb.processStereo(outL, outR, buffer.getNumSamples());
 }
 
 //==============================================================================
@@ -178,45 +183,49 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
 {
     juce::AudioProcessorValueTreeState::ParameterLayout layout;
 
-    layout.add(std::make_unique<juce::AudioParameterInt>("Num Grains", 
-                                                         "Num Grains", 
-                                                         1, 
+    layout.add(std::make_unique<juce::AudioParameterInt>("Num Grains",
+                                                         "Num Grains",
+                                                         1,
                                                          8,
                                                          1));
-    
-    layout.add(std::make_unique<juce::AudioParameterFloat>("Grain Duration", 
-                                                           "Grain Duration", 
-                                                           juce::NormalisableRange<float>(1.f, 1000.f, .01f, .18f), 
+
+    layout.add(std::make_unique<juce::AudioParameterFloat>("Grain Duration",
+                                                           "Grain Duration",
+                                                           juce::NormalisableRange<float>(1.f, 1000.f, .01f, .18f),
                                                            1.f));
 
-    layout.add(std::make_unique<juce::AudioParameterFloat>("Position", 
-                                                           "Position", 
-                                                           juce::NormalisableRange<float>(0.f, 1.f, .01f, 1.f), 
+    layout.add(std::make_unique<juce::AudioParameterFloat>("Position",
+                                                           "Position",
+                                                           juce::NormalisableRange<float>(0.f, 1.f, .01f, 1.f),
                                                            0.f));
 
-    layout.add(std::make_unique<juce::AudioParameterInt>("Synth Attack", 
-                                                         "Synth Attack", 
+    layout.add(std::make_unique<juce::AudioParameterInt>("Synth Attack",
+                                                         "Synth Attack",
                                                          0,
                                                          30000,
                                                          30));
 
-    layout.add(std::make_unique<juce::AudioParameterInt>("Synth Decay", 
-                                                         "Synth Decay", 
+    layout.add(std::make_unique<juce::AudioParameterInt>("Synth Decay",
+                                                         "Synth Decay",
                                                          0,
                                                          30000,
                                                          0));
 
-    layout.add(std::make_unique<juce::AudioParameterInt>("Synth Sustain", 
-                                                         "Synth Sustain", 
+    layout.add(std::make_unique<juce::AudioParameterInt>("Synth Sustain",
+                                                         "Synth Sustain",
                                                          0,
                                                          100,
                                                          100));
 
-    layout.add(std::make_unique<juce::AudioParameterInt>("Synth Release", 
-                                                         "Synth Release", 
+    layout.add(std::make_unique<juce::AudioParameterInt>("Synth Release",
+                                                         "Synth Release",
                                                          0,
                                                          30000,
                                                          30));
+
+    layout.add(std::make_unique<juce::AudioParameterBool>("Reverb Toggle",
+                                                          "Reverb Toggle",
+                                                          false));
 
     return layout;
 }
