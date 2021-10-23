@@ -173,62 +173,75 @@ juce::String RotarySliderWithLabels::getDisplayString() const
     return str;
 }
 
-DraggableAudioThumbnail::DraggableAudioThumbnail(AudioPluginAudioProcessor& processorRef, int sourceSamplesPerThumbnailSample, juce::AudioFormatManager& formatManager, juce::AudioThumbnailCache& cacheToUse)
+MainAudioThumbnailComponent::MainAudioThumbnailComponent(AudioPluginAudioProcessor& processorRef, int sourceSamplesPerThumbnailSample, juce::AudioFormatManager& formatManager, juce::AudioThumbnailCache& cacheToUse)
     : audioThumbnail(sourceSamplesPerThumbnailSample, formatManager, cacheToUse),
-      processorRef(processorRef)
+      previewAudioThumbnailCache(1),
+      previewAudioThumbnail(sourceSamplesPerThumbnailSample, formatManager, previewAudioThumbnailCache),
+      processorRef(processorRef),
+      formatManager(formatManager)
 {
     audioThumbnail.addChangeListener(this);
+    setMouseCursor(juce::MouseCursor::CrosshairCursor);
 }
 
-DraggableAudioThumbnail::~DraggableAudioThumbnail()
+MainAudioThumbnailComponent::~MainAudioThumbnailComponent()
 {
     audioThumbnail.removeChangeListener(this);
     audioThumbnail.setSource(nullptr); // No idea why this is needed but does not work otherwise
+    previewAudioThumbnail.setSource(nullptr);
 }
 
-void DraggableAudioThumbnail::paint(juce::Graphics& g)
+void MainAudioThumbnailComponent::paint(juce::Graphics& g)
 {
-    if (audioThumbnail.getNumChannels() == 0)
+    if (audioThumbnail.getNumChannels() == 0 && previewAudioThumbnail.getNumChannels() == 0)
         paintIfNoFileLoaded(g, getLocalBounds());
     else
         paintIfFileLoaded(g, getLocalBounds());
 }
 
-void DraggableAudioThumbnail::sliderValueChanged (juce::Slider *slider)
+void MainAudioThumbnailComponent::sliderValueChanged (juce::Slider *slider)
 {
     repaint();
 }
 
-void DraggableAudioThumbnail::setSource(juce::InputSource* newSource)
+void MainAudioThumbnailComponent::setSource(juce::InputSource* newSource)
 {
     audioThumbnail.setSource(newSource);
 }
 
-void DraggableAudioThumbnail::changeListenerCallback(juce::ChangeBroadcaster* source)
+void MainAudioThumbnailComponent::changeListenerCallback(juce::ChangeBroadcaster* source)
 {
     if (source == &audioThumbnail) repaint();
 }
 
-void DraggableAudioThumbnail::mouseDown(const juce::MouseEvent& event)
+void MainAudioThumbnailComponent::mouseDown(const juce::MouseEvent& event)
 {
     if(audioThumbnail.getNumChannels() > 0)
         setCursorAtPoint(event.getPosition());
 }
 
-void DraggableAudioThumbnail::mouseDrag(const juce::MouseEvent& event)
+void MainAudioThumbnailComponent::mouseDrag(const juce::MouseEvent& event)
 {
     if (audioThumbnail.getNumChannels() > 0)
         setCursorAtPoint(event.getPosition());
 }
 
-void DraggableAudioThumbnail::setCursorAtPoint(const juce::Point<int>& point)
+void MainAudioThumbnailComponent::mouseEnter(const juce::MouseEvent& event)
+{
+}
+
+void MainAudioThumbnailComponent::mouseExit(const juce::MouseEvent& event)
+{
+}
+
+void MainAudioThumbnailComponent::setCursorAtPoint(const juce::Point<int>& point)
 {
     auto x = point.getX();
     processorRef.apvts.getParameter("Position")->setValue((float) x / (float) getWidth());
     repaint();
 }
 
-void DraggableAudioThumbnail::paintIfNoFileLoaded (juce::Graphics& g, const juce::Rectangle<int>& thumbnailBounds)
+void MainAudioThumbnailComponent::paintIfNoFileLoaded (juce::Graphics& g, const juce::Rectangle<int>& thumbnailBounds)
 {
     g.setColour(juce::Colours::grey);
     g.fillRect(thumbnailBounds);
@@ -236,48 +249,126 @@ void DraggableAudioThumbnail::paintIfNoFileLoaded (juce::Graphics& g, const juce
     g.drawFittedText("Drag .wav file here", thumbnailBounds, juce::Justification::centred, 1);
 }
 
-void DraggableAudioThumbnail::paintIfFileLoaded (juce::Graphics& g, const juce::Rectangle<int>& thumbnailBounds)
+void MainAudioThumbnailComponent::paintIfFileLoaded (juce::Graphics& g, const juce::Rectangle<int>& thumbnailBounds)
 {
     auto bounds = getLocalBounds();
     g.setColour(juce::Colours::white);
     g.fillRect(thumbnailBounds);
-    g.setColour(juce::Colours::black);
+    juce::AudioThumbnail* thumbnailToDraw;
+    juce::Colour waveformColour;
+    if (previewAudioThumbnail.getNumChannels() > 0)
+    {
+        thumbnailToDraw = &previewAudioThumbnail;
+        waveformColour = juce::Colours::grey;
+    }
+    else
+    {
+        thumbnailToDraw = &audioThumbnail;
+        waveformColour = juce::Colours::black;
+    }
 
-    audioThumbnail.drawChannel(
+    g.setColour(waveformColour);
+
+    thumbnailToDraw->drawChannel(
         g,
         thumbnailBounds,
         0.0,
-        audioThumbnail.getTotalLength(),
+        thumbnailToDraw->getTotalLength(),
         0,
         1.f
     );
 
     // draw position line
-    g.setColour(juce::Colours::black);
     g.drawVerticalLine(
         bounds.getX() + bounds.getWidth() * processorRef.apvts.getParameter("Position")->getValue(),
         bounds.getTopLeft().getY(),
         bounds.getBottom()
     );
+
+    g.drawLine(
+        bounds.getWidth() * processorRef.apvts.getParameter("Position")->getValue(),
+        8.f,
+        bounds.getWidth() * processorRef.apvts.getParameter("Position")->getValue() + 8,
+        8.f,
+        1.f
+    );
+
+    g.fillEllipse(
+        bounds.getWidth() * processorRef.apvts.getParameter("Position")->getValue() + 6,
+        6.f,
+        4.f,
+        4.f
+    );
+}
+
+bool MainAudioThumbnailComponent::isInterestedInFileDrag(const juce::StringArray &/*files*/)
+{
+    return true;
+}
+
+void MainAudioThumbnailComponent::fileDragEnter (const juce::StringArray &files, int /*x*/, int /*y*/)
+{
+    juce::File file(files[0]);
+    previewAudioThumbnail.setSource(new juce::FileInputSource(file));
+    repaint();
+}
+
+void MainAudioThumbnailComponent::fileDragMove (const juce::StringArray &/*files*/, int /*x*/, int /*y*/){}
+
+void MainAudioThumbnailComponent::fileDragExit (const juce::StringArray &files)
+{
+    previewAudioThumbnail.setSource(nullptr);
+    repaint();
+}
+
+void MainAudioThumbnailComponent::filesDropped(const juce::StringArray &files, int /*x*/, int /*y*/)
+{
+    for (auto string : files)
+    {
+        auto file = juce::File(string);
+        std::unique_ptr<juce::AudioFormatReader> reader (formatManager.createReaderFor(file));
+        if (reader.get() != nullptr)
+        {
+            std::cout << "Reader created!" << std::endl;
+            auto duration = (float) reader->lengthInSamples / reader->sampleRate;
+            if (duration < 10)
+            {
+                previewAudioThumbnail.setSource(nullptr);
+                processorRef.getSynthAudioSource().init(new MultigrainSound(string, *reader, 0, 60, 10));
+                setSource(new juce::FileInputSource(file));
+            }
+            else
+            {
+                // TODO: handle the error that the file is 10 seconds or longer..
+            }
+        }
+        else
+        {
+            // TODO: display error message here
+            std::cout << "No reader created!" << std::endl;
+        }
+    }
 }
 
 //==============================================================================
 AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAudioProcessor& p)
     : AudioProcessorEditor (&p), processorRef (p),
-    numGrainsSlider(*processorRef.apvts.getParameter("Num Grains"), ""),
-    grainDurationSlider(*processorRef.apvts.getParameter("Grain Duration"), ""),
-    positionSlider(*processorRef.apvts.getParameter("Position"), "%"),
-    synthAttackSlider(*processorRef.apvts.getParameter("Synth Attack"), "ms", RotarySliderWithLabels::HIGHVALUEINT),
-    synthDecaySlider(*processorRef.apvts.getParameter("Synth Decay"), "ms", RotarySliderWithLabels::HIGHVALUEINT),
-    synthSustainSlider(*processorRef.apvts.getParameter("Synth Sustain"), "%"),
-    synthReleaseSlider(*processorRef.apvts.getParameter("Synth Release"), "ms", RotarySliderWithLabels::HIGHVALUEINT),
-    numGrainsSliderAttachment(processorRef.apvts, "Num Grains", numGrainsSlider),
+    numGrainsSlider              (*processorRef.apvts.getParameter("Num Grains"), ""),
+    grainDurationSlider          (*processorRef.apvts.getParameter("Grain Duration"), ""),
+    positionSlider               (*processorRef.apvts.getParameter("Position"), "%"),
+    synthAttackSlider            (*processorRef.apvts.getParameter("Synth Attack"), "ms", RotarySliderWithLabels::HIGHVALUEINT),
+    synthDecaySlider             (*processorRef.apvts.getParameter("Synth Decay"), "ms", RotarySliderWithLabels::HIGHVALUEINT),
+    synthSustainSlider           (*processorRef.apvts.getParameter("Synth Sustain"), "%"),
+    synthReleaseSlider           (*processorRef.apvts.getParameter("Synth Release"), "ms", RotarySliderWithLabels::HIGHVALUEINT),
+
+    numGrainsSliderAttachment    (processorRef.apvts, "Num Grains", numGrainsSlider),
     grainDurationSliderAttachment(processorRef.apvts, "Grain Duration", grainDurationSlider),
-    positionSliderAttachment(processorRef.apvts, "Position", positionSlider),
-    synthAttackSliderAttachment(processorRef.apvts, "Synth Attack", synthAttackSlider),
-    synthDecaySliderAttachment(processorRef.apvts, "Synth Decay", synthDecaySlider),
-    synthSustainSliderAttachment(processorRef.apvts, "Synth Sustain", synthSustainSlider),
-    synthReleaseSliderAttachment(processorRef.apvts, "Synth Release", synthReleaseSlider),
+    positionSliderAttachment     (processorRef.apvts, "Position", positionSlider),
+    synthAttackSliderAttachment  (processorRef.apvts, "Synth Attack", synthAttackSlider),
+    synthDecaySliderAttachment   (processorRef.apvts, "Synth Decay", synthDecaySlider),
+    synthSustainSliderAttachment (processorRef.apvts, "Synth Sustain", synthSustainSlider),
+    synthReleaseSliderAttachment (processorRef.apvts, "Synth Release", synthReleaseSlider),
+
     keyboardComponent(processorRef.keyboardState, juce::MidiKeyboardComponent::horizontalKeyboard),
     audioThumbnailCache(5),
     audioThumbnailComponent(processorRef, 512, formatManager, audioThumbnailCache)
@@ -376,43 +467,4 @@ std::vector<juce::Component*> AudioPluginAudioProcessorEditor::getComps()
         &synthReleaseSlider,
         &audioThumbnailComponent
     };
-}
-
-bool AudioPluginAudioProcessorEditor::isInterestedInFileDrag(const juce::StringArray &/*files*/)
-{
-    return true;
-}
-
-void AudioPluginAudioProcessorEditor::fileDragEnter (const juce::StringArray &/*files*/, int /*x*/, int /*y*/){}
-
-void AudioPluginAudioProcessorEditor::fileDragMove (const juce::StringArray &/*files*/, int /*x*/, int /*y*/){}
-
-void AudioPluginAudioProcessorEditor::fileDragExit (const juce::StringArray &/*files*/){}
-
-void AudioPluginAudioProcessorEditor::filesDropped(const juce::StringArray &files, int /*x*/, int /*y*/)
-{
-    for (auto string : files)
-    {
-        auto file = juce::File(string);
-        std::unique_ptr<juce::AudioFormatReader> reader (formatManager.createReaderFor(file));
-        if (reader.get() != nullptr)
-        {
-            std::cout << "Reader created!" << std::endl;
-            auto duration = (float) reader->lengthInSamples / reader->sampleRate;
-            if (duration < 10)
-            {
-                processorRef.getSynthAudioSource().init(new MultigrainSound(string, *reader, 0, 60, 10));
-                audioThumbnailComponent.setSource(new juce::FileInputSource(file));
-            }
-            else
-            {
-                // TODO: handle the error that the file is 10 seconds or longer..
-            }
-        }
-        else
-        {
-            // TODO: display error message here
-            std::cout << "No reader created!" << std::endl;
-        }
-    }
 }

@@ -321,6 +321,10 @@ juce::Synthesiser& SynthAudioSource::getSynth()
 
 void SynthAudioSource::init(MultigrainSound* sound)
 {
+    // clear all previous sounds and voices
+    synth.clearSounds();
+    synth.clearVoices();
+
     synth.addSound(sound);
     for (int i = 0; i < 1; i++)
         synth.addVoice(new MultigrainVoice(apvts, *sound));
