@@ -4,16 +4,7 @@
 #include <juce_audio_utils/juce_audio_utils.h>
 
 #include "PluginProcessor.h"
-
-struct LookAndFeel : juce::LookAndFeel_V4
-{
-    void drawRotarySlider (juce::Graphics&,
-                                       int x, int y, int width, int height,
-                                       float sliderPosProportional,
-                                       float rotaryStartAngle,
-                                       float rotaryEndAngle,
-                                       juce::Slider&) override;
-};
+#include "RotarySliderWithLabels.h"
 
 class MainAudioThumbnailComponent : public juce::Component,
                                     public juce::Slider::Listener,
@@ -48,50 +39,6 @@ private:
     juce::AudioThumbnail previewAudioThumbnail;
     juce::AudioFormatManager& formatManager;
     AudioPluginAudioProcessor& processorRef;
-};
-
-struct RotarySliderWithLabels : juce::Slider
-{
-    enum Type
-    {
-        DEFAULT,
-        HIGHVALUEINT
-    };
-
-    RotarySliderWithLabels(juce::RangedAudioParameter& rap, const juce::String& unitSuffix, RotarySliderWithLabels::Type type = RotarySliderWithLabels::DEFAULT)
-        : juce::Slider(juce::Slider::SliderStyle::RotaryVerticalDrag,
-                                        juce::Slider::TextEntryBoxPosition::NoTextBox),
-          param(&rap),
-          suffix(unitSuffix),
-          type(type)
-    {
-        setLookAndFeel(&lnf);
-    }
-
-    ~RotarySliderWithLabels()
-    {
-        setLookAndFeel(nullptr);
-    }
-
-    struct LabelPos
-    {
-        float pos;
-        juce::String label;
-    };
-
-    juce::Array<LabelPos> labels;
-
-    void paint(juce::Graphics& g) override;
-    juce::Rectangle<int> getSliderBounds() const;
-    int getTextHeight() const { return 14; }
-    juce::String getDisplayString() const;
-
-private:
-    LookAndFeel lnf;
-    RotarySliderWithLabels::Type type;
-
-    juce::RangedAudioParameter* param;
-    juce::String suffix;
 };
 
 //==============================================================================

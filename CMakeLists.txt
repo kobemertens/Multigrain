@@ -74,6 +74,9 @@ target_sources(${PROJECT_NAME}
         PluginEditor.cpp
         PluginProcessor.cpp
         SynthAudioSource.cpp
+        AdsrComponent.cpp
+        RotarySliderWithLabels.cpp
+        LookAndFeel.cpp
     )
 
 # `target_compile_definitions` adds some preprocessor definitions to our target. In a Projucer
