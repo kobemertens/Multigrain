@@ -49,3 +49,37 @@ private:
     juce::RangedAudioParameter* param;
     juce::String suffix;
 };
+
+struct RotarySlider : juce::Slider
+{
+    enum Type
+    {
+        DEFAULT,
+        HIGHVALUEINT
+    };
+
+    RotarySlider(juce::RangedAudioParameter& rap, const juce::String& unitSuffix)
+        : juce::Slider(juce::Slider::SliderStyle::RotaryVerticalDrag,
+                                        juce::Slider::TextEntryBoxPosition::NoTextBox),
+          param(&rap),
+          suffix(unitSuffix)
+    {
+        setLookAndFeel(&lnf);
+    }
+
+    ~RotarySlider()
+    {
+        setLookAndFeel(nullptr);
+    }
+
+    void paint(juce::Graphics& g) override;
+    juce::Rectangle<int> getSliderBounds() const;
+    int getTextHeight() const { return 14; }
+    juce::String getDisplayString() const;
+
+private:
+    LookAndFeel lnf;
+
+    juce::RangedAudioParameter* param;
+    juce::String suffix;
+};

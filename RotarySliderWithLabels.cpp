@@ -114,3 +114,89 @@ juce::String RotarySliderWithLabels::getDisplayString() const
 
     return str;
 }
+
+// ---------------------------------------------------------------------
+
+void RotarySlider::paint(juce::Graphics& g)
+{
+    using namespace juce;
+
+    auto startAng = degreesToRadians(180.f + 45.f);
+    auto endAng = degreesToRadians(180.f - 45.f) + MathConstants<float>::twoPi;
+
+    auto range = getRange();
+
+    auto sliderBounds = getSliderBounds();
+
+    // g.setColour(Colours::red);
+    // g.drawRect(getLocalBounds());
+    // g.setColour(Colours::yellow);
+    // g.drawRect(sliderBounds);
+
+    getLookAndFeel().drawRotarySlider(
+        g,
+        sliderBounds.getX(),
+        sliderBounds.getY(),
+        sliderBounds.getWidth(),
+        sliderBounds.getHeight(),
+        jmap(getValue(), range.getStart(), range.getEnd(), 0., 1.),
+        startAng,
+        endAng,
+        *this
+    );
+
+    auto center = sliderBounds.toFloat().getCentre();
+    auto radius = sliderBounds.getWidth() * 0.5f;
+
+    g.setColour(Colours::white);
+    g.setFont(getTextHeight());
+}
+
+juce::Rectangle<int> RotarySlider::getSliderBounds() const
+{
+    auto bounds = getLocalBounds();
+
+    auto size = juce::jmin(bounds.getWidth(), bounds.getHeight());
+
+    size -= getTextHeight() * 2;
+    juce::Rectangle<int> r;
+    r.setSize(size, size);
+    r.setCentre(bounds.getCentreX(), 0);
+    r.setY(2);
+
+    return r;
+}
+
+juce::String RotarySlider::getDisplayString() const
+{
+    juce::String str;
+    bool isPercent = false;
+    if(auto* floatParam = dynamic_cast<juce::AudioParameterFloat*>(param))
+    {
+        float val = getValue();
+        if(floatParam->paramID == "Position")
+        {
+            val *= 100;
+            isPercent = true;
+
+        }
+        str = juce::String(val, 0);
+    }
+    else if (auto* intParam = dynamic_cast<juce::AudioParameterInt*>(param))
+    {
+        int val = getValue();
+        str = juce::String(val);
+    }
+    else
+    {
+        jassertfalse; // this should not happen!
+    }
+
+    if (suffix.isNotEmpty())
+    {
+        str << " ";
+        str << suffix;
+    }
+
+    return str;
+}

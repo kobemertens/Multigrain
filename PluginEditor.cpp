@@ -226,7 +226,8 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
 
     keyboardComponent(processorRef.keyboardState, juce::MidiKeyboardComponent::horizontalKeyboard),
     audioThumbnailCache(5),
-    audioThumbnailComponent(processorRef, 512, formatManager, audioThumbnailCache)
+    audioThumbnailComponent(processorRef, 512, formatManager, audioThumbnailCache),
+    mainAdsrComponent(processorRef, {"Synth Attack", "Synth Decay", "Synth Sustain", "Synth Release"})
 {
     numGrainsSlider.labels.add({0.f, "1"});
     numGrainsSlider.labels.add({1.f, "8"});
@@ -286,33 +287,35 @@ void AudioPluginAudioProcessorEditor::resized()
 
     waveformArea = bounds.removeFromTop(bounds.getHeight() * 0.25);
     auto knobArea = bounds.removeFromTop(bounds.getHeight() * 0.33);
-    auto adrsArea = bounds.removeFromTop(bounds.getHeight() * 0.5);
-    auto effectsArea = bounds.removeFromTop(bounds.getHeight() * 0.5);
-    auto randomArea = effectsArea.removeFromLeft(effectsArea.getWidth()*0.5);
+    auto adrsArea = bounds;
+    // auto effectsArea = bounds.removeFromTop(bounds.getHeight() * 0.5);
+    // auto randomArea = effectsArea.removeFromLeft(effectsArea.getWidth()*0.5);
     auto keyboardArea = bounds;
 
     auto numGrainsArea = knobArea.removeFromLeft(knobArea.getWidth() * 0.33);
     auto grainDurationArea = knobArea.removeFromLeft(knobArea.getWidth() * 0.5);
     auto durationArea = knobArea;
 
-    auto synthAttackArea = adrsArea.removeFromLeft(adrsArea.getWidth() * 0.25);
-    auto synthDecayArea = adrsArea.removeFromLeft(adrsArea.getWidth()*0.33);
-    auto synthSustainArea = adrsArea.removeFromLeft(adrsArea.getWidth()*0.5);
-    auto synthReleaseArea = adrsArea;
+    // auto synthAttackArea = adrsArea.removeFromLeft(adrsArea.getWidth() * 0.25);
+    // auto synthDecayArea = adrsArea.removeFromLeft(adrsArea.getWidth()*0.33);
+    // auto synthSustainArea = adrsArea.removeFromLeft(adrsArea.getWidth()*0.5);
+    // auto synthReleaseArea = adrsArea;
 
-    numGrainsSlider.setBounds(numGrainsArea);
-    grainDurationSlider.setBounds(grainDurationArea);
-    positionSlider.setBounds(durationArea);
-    keyboardComponent.setBounds(keyboardArea);
+    // numGrainsSlider.setBounds(numGrainsArea);
+    // grainDurationSlider.setBounds(grainDurationArea);
+    // positionSlider.setBounds(durationArea);
+    // keyboardComponent.setBounds(keyboardArea);
     audioThumbnailComponent.setBounds(waveformArea);
 
-    synthAttackSlider.setBounds(synthAttackArea);
-    synthDecaySlider.setBounds(synthDecayArea);
-    synthSustainSlider.setBounds(synthSustainArea);
-    synthReleaseSlider.setBounds(synthReleaseArea);
+    // synthAttackSlider.setBounds(synthAttackArea);
+    // synthDecaySlider.setBounds(synthDecayArea);
+    // synthSustainSlider.setBounds(synthSustainArea);
+    // synthReleaseSlider.setBounds(synthReleaseArea);
 
-    reverbToggleButton.setBounds(effectsArea);
-    randomPositionSlider.setBounds(randomArea);
+    mainAdsrComponent.setBounds(adrsArea);
+
+    // reverbToggleButton.setBounds(effectsArea);
+    // randomPositionSlider.setBounds(randomArea);
 }
 
 std::vector<juce::Component*> AudioPluginAudioProcessorEditor::getComps()
@@ -329,6 +332,7 @@ std::vector<juce::Component*> AudioPluginAudioProcessorEditor::getComps()
         &synthReleaseSlider,
         &audioThumbnailComponent,
         &reverbToggleButton,
-        &randomPositionSlider
+        &randomPositionSlider,
+        &mainAdsrComponent
     };
 }
