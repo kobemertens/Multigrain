@@ -267,6 +267,10 @@ void MainAudioThumbnailComponent::paintIfFileLoaded (juce::Graphics& g, const ju
         waveformColour = juce::Colours::black;
     }
 
+    paintRandomPositionRegion(g);
+
+    auto grainPosition = bounds.getWidth() * processorRef.apvts.getParameter("Position")->getValue();
+
     g.setColour(waveformColour);
 
     thumbnailToDraw->drawChannel(
@@ -280,25 +284,45 @@ void MainAudioThumbnailComponent::paintIfFileLoaded (juce::Graphics& g, const ju
 
     // draw position line
     g.drawVerticalLine(
-        bounds.getX() + bounds.getWidth() * processorRef.apvts.getParameter("Position")->getValue(),
+        grainPosition,
         bounds.getTopLeft().getY(),
         bounds.getBottom()
     );
+}
 
-    // g.drawLine(
-    //     bounds.getWidth() * processorRef.apvts.getParameter("Position")->getValue(),
-    //     8.f,
-    //     bounds.getWidth() * processorRef.apvts.getParameter("Position")->getValue() + 8,
-    //     8.f,
-    //     1.f
-    // );
+void MainAudioThumbnailComponent::paintRandomPositionRegion(juce::Graphics& g)
+{
+    auto bounds = getLocalBounds();
+    auto grainPosition = bounds.getWidth() * processorRef.apvts.getParameter("Position")->getValue();
+    auto randomRangeScaled = bounds.getWidth() * processorRef.apvts.getParameter("Random Position")->getValue();
+    auto randomRangeScaledHalf = randomRangeScaled/2;
+    g.setColour(juce::Colours::lightseagreen);
+    
+    if (grainPosition + randomRangeScaledHalf > getWidth())
+        g.fillRect(
+            0.f,
+            0.f,
+            (float) (grainPosition + randomRangeScaledHalf) - getWidth(),
+            (float) getHeight()
+        );
 
-    // g.fillEllipse(
-    //     bounds.getWidth() * processorRef.apvts.getParameter("Position")->getValue() + 6,
-    //     6.f,
-    //     4.f,
-    //     4.f
-    // );
+    if (grainPosition - randomRangeScaledHalf < 0.f)
+    {
+        auto remainderX = (float) getWidth() + (grainPosition - randomRangeScaledHalf);
+        g.fillRect(
+            remainderX,
+            0.f,
+            getWidth() - remainderX,
+            (float) getHeight()
+        );
+    }
+    // draw random region
+    g.fillRect(
+        grainPosition - randomRangeScaled/2,
+        0.f,
+        (float) randomRangeScaled,
+        (float) getHeight()
+    );
 }
 
 bool MainAudioThumbnailComponent::isInterestedInFileDrag(const juce::StringArray &/*files*/)
@@ -360,15 +384,17 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     synthDecaySlider             (*processorRef.apvts.getParameter("Synth Decay"), "ms", RotarySliderWithLabels::HIGHVALUEINT),
     synthSustainSlider           (*processorRef.apvts.getParameter("Synth Sustain"), "%"),
     synthReleaseSlider           (*processorRef.apvts.getParameter("Synth Release"), "ms", RotarySliderWithLabels::HIGHVALUEINT),
+    randomPositionSlider         (*processorRef.apvts.getParameter("Random Position"), "%"),
 
-    numGrainsSliderAttachment    (processorRef.apvts, "Num Grains", numGrainsSlider),
-    grainDurationSliderAttachment(processorRef.apvts, "Grain Duration", grainDurationSlider),
-    positionSliderAttachment     (processorRef.apvts, "Position", positionSlider),
-    synthAttackSliderAttachment  (processorRef.apvts, "Synth Attack", synthAttackSlider),
-    synthDecaySliderAttachment   (processorRef.apvts, "Synth Decay", synthDecaySlider),
-    synthSustainSliderAttachment (processorRef.apvts, "Synth Sustain", synthSustainSlider),
-    synthReleaseSliderAttachment (processorRef.apvts, "Synth Release", synthReleaseSlider),
-    reverbToggleButtonAttachment (processorRef.apvts, "Reverb Toggle", reverbToggleButton),
+    numGrainsSliderAttachment     (processorRef.apvts, "Num Grains", numGrainsSlider),
+    grainDurationSliderAttachment (processorRef.apvts, "Grain Duration", grainDurationSlider),
+    positionSliderAttachment      (processorRef.apvts, "Position", positionSlider),
+    synthAttackSliderAttachment   (processorRef.apvts, "Synth Attack", synthAttackSlider),
+    synthDecaySliderAttachment    (processorRef.apvts, "Synth Decay", synthDecaySlider),
+    synthSustainSliderAttachment  (processorRef.apvts, "Synth Sustain", synthSustainSlider),
+    synthReleaseSliderAttachment  (processorRef.apvts, "Synth Release", synthReleaseSlider),
+    reverbToggleButtonAttachment  (processorRef.apvts, "Reverb Toggle", reverbToggleButton),
+    randomPositionSliderAttachment(processorRef.apvts, "Random Position", randomPositionSlider),
 
     keyboardComponent(processorRef.keyboardState, juce::MidiKeyboardComponent::horizontalKeyboard),
     audioThumbnailCache(5),
@@ -396,6 +422,8 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
 
     synthReleaseSlider.labels.add({0.f, "30 ms"});
     synthReleaseSlider.labels.add({1.f, "30k ms"});
+
+    randomPositionSlider.addListener(&audioThumbnailComponent);
 
     for (auto* comp : getComps())
     {
@@ -432,6 +460,7 @@ void AudioPluginAudioProcessorEditor::resized()
     auto knobArea = bounds.removeFromTop(bounds.getHeight() * 0.33);
     auto adrsArea = bounds.removeFromTop(bounds.getHeight() * 0.5);
     auto effectsArea = bounds.removeFromTop(bounds.getHeight() * 0.5);
+    auto randomArea = effectsArea.removeFromLeft(effectsArea.getWidth()*0.5);
     auto keyboardArea = bounds;
 
     auto numGrainsArea = knobArea.removeFromLeft(knobArea.getWidth() * 0.33);
@@ -455,6 +484,7 @@ void AudioPluginAudioProcessorEditor::resized()
     synthReleaseSlider.setBounds(synthReleaseArea);
 
     reverbToggleButton.setBounds(effectsArea);
+    randomPositionSlider.setBounds(randomArea);
 }
 
 std::vector<juce::Component*> AudioPluginAudioProcessorEditor::getComps()
@@ -470,6 +500,7 @@ std::vector<juce::Component*> AudioPluginAudioProcessorEditor::getComps()
         &synthSustainSlider,
         &synthReleaseSlider,
         &audioThumbnailComponent,
-        &reverbToggleButton
+        &reverbToggleButton,
+        &randomPositionSlider
     };
 }

@@ -41,6 +41,7 @@ public:
 private:
     void paintIfNoFileLoaded (juce::Graphics& g, const juce::Rectangle<int>& thumbnailBounds);
     void paintIfFileLoaded (juce::Graphics& g, const juce::Rectangle<int>& thumbnailBounds);
+    void paintRandomPositionRegion(juce::Graphics& g);
     void setCursorAtPoint(const juce::Point<int>& point);
     juce::AudioThumbnail audioThumbnail;
     juce::AudioThumbnailCache previewAudioThumbnailCache;
@@ -119,7 +120,8 @@ private:
                            synthAttackSlider,
                            synthDecaySlider,
                            synthSustainSlider,
-                           synthReleaseSlider;
+                           synthReleaseSlider,
+                           randomPositionSlider;
 
     juce::ToggleButton reverbToggleButton;
 
@@ -141,11 +143,10 @@ private:
                synthAttackSliderAttachment,
                synthDecaySliderAttachment,
                synthSustainSliderAttachment,
-               synthReleaseSliderAttachment;
+               synthReleaseSliderAttachment,
+               randomPositionSliderAttachment;
 
     ButtonAttachment reverbToggleButtonAttachment;
-
-
 
     juce::AudioFormatManager formatManager;
 

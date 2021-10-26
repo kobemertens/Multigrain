@@ -203,13 +203,13 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
                                                          "Synth Attack",
                                                          0,
                                                          30000,
-                                                         30));
+                                                         0));
 
     layout.add(std::make_unique<juce::AudioParameterInt>("Synth Decay",
                                                          "Synth Decay",
                                                          0,
                                                          30000,
-                                                         0));
+                                                         1000));
 
     layout.add(std::make_unique<juce::AudioParameterInt>("Synth Sustain",
                                                          "Synth Sustain",
@@ -221,11 +221,16 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
                                                          "Synth Release",
                                                          0,
                                                          30000,
-                                                         30));
+                                                         1000));
 
     layout.add(std::make_unique<juce::AudioParameterBool>("Reverb Toggle",
                                                           "Reverb Toggle",
                                                           false));
+
+    layout.add(std::make_unique<juce::AudioParameterFloat>("Random Position",
+                                                           "Random Position",
+                                                           juce::NormalisableRange<float>(0.f, 100.f, 0.01f, 1.f),
+                                                           0.f));
 
     return layout;
 }

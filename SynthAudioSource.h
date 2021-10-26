@@ -113,6 +113,7 @@ public:
     void renderNextBlock(juce::AudioSampleBuffer& outputBuffer, int startSample, int numSamples) override;
 private:
     Grain& activateNextGrain(double sourcePosition, int grainDurationInSamples);
+    double getNextGrainPosition();
     void deactivateGrains();
     double pitchRatio = 0;
     double sourceSamplePosition = 0;
@@ -129,6 +130,8 @@ private:
 
     juce::AudioProcessorValueTreeState& apvts;
     MultigrainSound& sound;
+
+    juce::Random randomGenerator;
 
     JUCE_LEAK_DETECTOR(MultigrainVoice);
 };

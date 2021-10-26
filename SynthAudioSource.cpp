@@ -45,6 +45,9 @@ void GrainSource::init(double startPosition, double pitchRatio)
     if (startPosition >= sourceData.length)
         startPosition -= sourceData.length;
 
+    if (startPosition < 0.)
+        startPosition = sourceData.length + startPosition;
+
     sourceSamplePosition = startPosition;
 }
 
@@ -252,7 +255,7 @@ void MultigrainVoice::renderNextBlock(juce::AudioSampleBuffer& outputBuffer, int
         // Check if new grains need to be activated
         while (samplesTillNextOnset < numSamples)
         {
-            Grain& grain = activateNextGrain(apvts.getParameter("Position")->getValue()*sound.length, grainDurationSamples);
+            Grain& grain = activateNextGrain(getNextGrainPosition(), grainDurationSamples);
             grain.renderNextBlock(outputBuffer, startSample + samplesTillNextOnset, numSamples - samplesTillNextOnset);
             samplesTillNextOnset += samplesBetweenOnsets; // TODO allow randomness here
         }
@@ -265,6 +268,16 @@ void MultigrainVoice::renderNextBlock(juce::AudioSampleBuffer& outputBuffer, int
         if (!adsr.isActive())
             clearCurrentNote();
     }
+}
+
+double MultigrainVoice::getNextGrainPosition()
+{
+    auto randomRange = apvts.getParameter("Random Position")->getValue()*sound.length;
+    auto randomDouble = randomGenerator.nextDouble();
+    auto samplePosition = apvts.getParameter("Position")->getValue()*sound.length;
+
+    // return samplePosition + (randomRange*randomDouble) - randomRange/2;
+    return samplePosition;
 }
 
 Grain& MultigrainVoice::activateNextGrain(double sourcePosition, int grainDurationInSamples)
