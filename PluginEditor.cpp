@@ -125,7 +125,7 @@ void MainAudioThumbnailComponent::paintRandomPositionRegion(juce::Graphics& g)
     auto randomRangeScaled = bounds.getWidth() * processorRef.apvts.getParameter("Random Position")->getValue();
     auto randomRangeScaledHalf = randomRangeScaled/2;
     g.setColour(juce::Colours::lightseagreen);
-    
+
     if (grainPosition + randomRangeScaledHalf > getWidth())
         g.fillRect(
             0.f,
@@ -286,15 +286,15 @@ void AudioPluginAudioProcessorEditor::resized()
     auto bounds = getLocalBounds();
 
     waveformArea = bounds.removeFromTop(bounds.getHeight() * 0.25);
-    auto knobArea = bounds.removeFromTop(bounds.getHeight() * 0.33);
+    // auto knobArea = bounds.removeFromTop(bounds.getHeight() * 0.33);
     auto adrsArea = bounds;
     // auto effectsArea = bounds.removeFromTop(bounds.getHeight() * 0.5);
     // auto randomArea = effectsArea.removeFromLeft(effectsArea.getWidth()*0.5);
-    auto keyboardArea = bounds;
+    // auto keyboardArea = bounds;
 
-    auto numGrainsArea = knobArea.removeFromLeft(knobArea.getWidth() * 0.33);
-    auto grainDurationArea = knobArea.removeFromLeft(knobArea.getWidth() * 0.5);
-    auto durationArea = knobArea;
+    // auto numGrainsArea = knobArea.removeFromLeft(knobArea.getWidth() * 0.33);
+    // auto grainDurationArea = knobArea.removeFromLeft(knobArea.getWidth() * 0.5);
+    // auto durationArea = knobArea;
 
     // auto synthAttackArea = adrsArea.removeFromLeft(adrsArea.getWidth() * 0.25);
     // auto synthDecayArea = adrsArea.removeFromLeft(adrsArea.getWidth()*0.33);

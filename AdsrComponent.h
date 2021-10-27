@@ -19,7 +19,7 @@ public:
         juce::String sustainParameter;
         juce::String releaseParameter;
     };
-    
+
     AdsrComponent(AudioPluginAudioProcessor& processorRef, const Parameters parameters);
     ~AdsrComponent();
     void resized() override;
@@ -33,13 +33,14 @@ private:
     {
     public:
         using APVTS = juce::AudioProcessorValueTreeState;
-        AdsrVisualComponent(AdsrComponent::Parameters& parameters, APVTS& apvts);
+        AdsrVisualComponent(AdsrComponent::Parameters parameters, APVTS& apvts);
         void paint(juce::Graphics& g) override;
+        void drawGrid(juce::Graphics& g, float ms);
     private:
+        Parameters parameters;
         APVTS& apvts;
-        Parameters& parameters;
     };
-    
+
     RotarySliderWithLabels attackSlider,
                            decaySlider,
                            sustainSlider,
