@@ -77,6 +77,8 @@ target_sources(${PROJECT_NAME}
         AdsrComponent.cpp
         RotarySliderWithLabels.cpp
         LookAndFeel.cpp
+        GrainTabComponent.cpp
+        FxTabComponent.cpp
     )
 
 # `target_compile_definitions` adds some preprocessor definitions to our target. In a Projucer

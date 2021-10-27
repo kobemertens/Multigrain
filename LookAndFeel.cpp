@@ -17,13 +17,13 @@ void LookAndFeel::drawRotarySlider (juce::Graphics& g,
 
     auto sliderBorderThickness = 10.f;
     g.setColour(Colours::royalblue);
-    g.drawEllipse(
-        bounds.withSizeKeepingCentre(
-            bounds.getWidth() - sliderBorderThickness,
-            bounds.getHeight() - sliderBorderThickness
-        ),
-        sliderBorderThickness
-    );
+    // g.drawEllipse(
+    //     bounds.withSizeKeepingCentre(
+    //         bounds.getWidth() - sliderBorderThickness,
+    //         bounds.getHeight() - sliderBorderThickness
+    //     ),
+    //     sliderBorderThickness
+    // );
 
     if(auto* rswl = dynamic_cast<RotarySliderWithLabels*>(&slider))
     {
@@ -33,7 +33,7 @@ void LookAndFeel::drawRotarySlider (juce::Graphics& g,
         Rectangle<float> r;
         r.setLeft(center.getX() - 3);
         r.setRight(center.getX() + 3);
-        r.setTop(bounds.getY() + sliderBorderThickness + 4);
+        r.setTop(bounds.getY());
         r.setBottom(center.getY() - rswl->getTextHeight() * 1.5f);
         p.addRoundedRectangle(r, 2.f);
 

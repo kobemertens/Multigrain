@@ -6,6 +6,8 @@
 #include "PluginProcessor.h"
 #include "RotarySliderWithLabels.h"
 #include "AdsrComponent.h"
+#include "GrainTabComponent.h"
+#include "FxTabComponent.h"
 
 class MainAudioThumbnailComponent : public juce::Component,
                                     public juce::Slider::Listener,
@@ -101,7 +103,10 @@ private:
     juce::AudioThumbnailCache audioThumbnailCache;
     // ---------------------------------------------------------------
     MainAudioThumbnailComponent audioThumbnailComponent;
+    juce::TabbedComponent mainTabbedComponent;
     AdsrComponent mainAdsrComponent;
+    GrainParamsComponent grainParamsComponent;
+    FxTabComponent fxTabComponent;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessorEditor)
 };

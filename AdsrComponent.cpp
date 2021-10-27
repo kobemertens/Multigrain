@@ -78,37 +78,40 @@ void AdsrComponent::AdsrVisualComponent::paint(juce::Graphics& g)
     auto releaseMs = apvts.getRawParameterValue(parameters.releaseParameter)->load();
     auto sustain = apvts.getParameter(parameters.sustainParameter)->getValue();
 
-    auto totalMs = attackMs + decayMs + releaseMs;
+    auto totalMs = juce::jmax(attackMs + decayMs + releaseMs, 2.f);
     drawGrid(g, totalMs);
 
     auto attackRatio = (float) attackMs / (float) totalMs;
     auto decayRatio = (float) decayMs / (float) totalMs;
     auto releaseRatio = (float) releaseMs / (float) totalMs;
 
+    float lineThickness = 2.f;
+    float lineThicknessHalf = 1.f;
+
 
     g.setColour(juce::Colours::black);
     g.drawLine(
         0,
-        bounds.getHeight(),
+        bounds.getHeight() - lineThicknessHalf,
         getWidth()*attackRatio,
-        1,
-        2.f
+        lineThicknessHalf,
+        lineThickness
     );
 
     g.drawLine(
         getWidth()*attackRatio,
-        0,
+        lineThicknessHalf,
         getWidth()*(attackRatio + decayRatio),
-        bounds.getHeight()*(1-sustain) + 1,
-        2.f
+        bounds.getHeight()*(1-sustain) + lineThicknessHalf,
+        lineThickness
     );
 
     g.drawLine(
         getWidth()*(attackRatio + decayRatio),
-        bounds.getHeight()*(1-sustain) + 1,
+        bounds.getHeight()*(1-sustain) + lineThicknessHalf,
         getWidth(),
         bounds.getHeight(),
-        2.f
+        lineThickness
     );
 }
 
