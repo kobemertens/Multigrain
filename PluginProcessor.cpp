@@ -191,7 +191,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
 
     layout.add(std::make_unique<juce::AudioParameterFloat>("Grain Duration",
                                                            "Duration",
-                                                           juce::NormalisableRange<float>(1.f, 1000.f, .01f, .18f),
+                                                           juce::NormalisableRange<float>(1.f, 1000.f, .0001f, .2f),
                                                            1.f));
 
     layout.add(std::make_unique<juce::AudioParameterFloat>("Position",
@@ -199,17 +199,15 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
                                                            juce::NormalisableRange<float>(0.f, 1.f, .0001f, 1.f),
                                                            0.f));
 
-    layout.add(std::make_unique<juce::AudioParameterInt>("Synth Attack",
+    layout.add(std::make_unique<juce::AudioParameterFloat>("Synth Attack",
                                                          "Attack",
-                                                         0,
-                                                         30000,
-                                                         0));
+                                                         juce::NormalisableRange<float>(0.f, 30000.f, 1.f, .2f),
+                                                         0.f));
 
-    layout.add(std::make_unique<juce::AudioParameterInt>("Synth Decay",
+    layout.add(std::make_unique<juce::AudioParameterFloat>("Synth Decay",
                                                          "Decay",
-                                                         0,
-                                                         30000,
-                                                         1000));
+                                                         juce::NormalisableRange<float>(0.f, 30000.f, 1.f, .2f),
+                                                         1000.f));
 
     layout.add(std::make_unique<juce::AudioParameterInt>("Synth Sustain",
                                                          "Sustain",
@@ -217,11 +215,10 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
                                                          100,
                                                          100));
 
-    layout.add(std::make_unique<juce::AudioParameterInt>("Synth Release",
+    layout.add(std::make_unique<juce::AudioParameterFloat>("Synth Release",
                                                          "Release",
-                                                         0,
-                                                         30000,
-                                                         1000));
+                                                         juce::NormalisableRange<float>(0.f, 30000.f, 1.f, .2f),
+                                                         1000.f));
 
     layout.add(std::make_unique<juce::AudioParameterBool>("Reverb Toggle",
                                                           "Reverb Toggle",

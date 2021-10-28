@@ -22,7 +22,7 @@ void RotarySliderWithLabels::paint(juce::Graphics& g)
         sliderBounds.getY(),
         sliderBounds.getWidth(),
         sliderBounds.getHeight(),
-        jmap(getValue(), range.getStart(), range.getEnd(), 0., 1.),
+        valueToProportionOfLength(getValue()),
         startAng,
         endAng,
         *this
