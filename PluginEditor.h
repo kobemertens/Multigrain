@@ -10,7 +10,7 @@
 #include "FxTabComponent.h"
 
 class MainAudioThumbnailComponent : public juce::Component,
-                                    public juce::Slider::Listener,
+                                    public juce::AudioProcessorValueTreeState::Listener,
                                     public juce::ChangeListener,
                                     public juce::FileDragAndDropTarget
 {
@@ -18,7 +18,7 @@ public:
     MainAudioThumbnailComponent(AudioPluginAudioProcessor& processorRef, int sourceSamplesPerThumbnailSample, juce::AudioFormatManager& formatManager, juce::AudioThumbnailCache& cacheToUse);
     ~MainAudioThumbnailComponent();
     void paint(juce::Graphics& g) override;
-    void sliderValueChanged (juce::Slider *slider) override;
+    void parameterChanged (const juce::String &parameterID, float newValue) override;
     void setSource(juce::InputSource* newSource);
     void changeListenerCallback(juce::ChangeBroadcaster* source) override;
     void mouseDown(const juce::MouseEvent& event) override;
@@ -64,16 +64,6 @@ private:
     // --------------------------------------------------------------
     // Components (dont forget to add to getComps!)
     // --------------------------------------------------------------
-    RotarySliderWithLabels numGrainsSlider,
-                           grainDurationSlider,
-                           positionSlider,
-                           synthAttackSlider,
-                           synthDecaySlider,
-                           synthSustainSlider,
-                           synthReleaseSlider,
-                           randomPositionSlider;
-
-    juce::ToggleButton reverbToggleButton;
 
     juce::MidiKeyboardComponent keyboardComponent;
     std::vector<juce::Component*> getComps();
@@ -86,17 +76,6 @@ private:
     using APVTS = juce::AudioProcessorValueTreeState;
     using SliderAttachment = APVTS::SliderAttachment;
     using ButtonAttachment = APVTS::ButtonAttachment;
-
-    SliderAttachment numGrainsSliderAttachment,
-               grainDurationSliderAttachment,
-               positionSliderAttachment,
-               synthAttackSliderAttachment,
-               synthDecaySliderAttachment,
-               synthSustainSliderAttachment,
-               synthReleaseSliderAttachment,
-               randomPositionSliderAttachment;
-
-    ButtonAttachment reverbToggleButtonAttachment;
 
     juce::AudioFormatManager formatManager;
 

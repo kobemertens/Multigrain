@@ -86,31 +86,36 @@ void AdsrComponent::AdsrVisualComponent::paint(juce::Graphics& g)
     auto releaseRatio = (float) releaseMs / (float) totalMs;
 
     float lineThickness = 2.f;
-    float lineThicknessHalf = 1.f;
+    float lineThicknessHalf = lineThickness/2;
 
+    auto paddedBounds = bounds;
+    paddedBounds.removeFromLeft(lineThicknessHalf);
+    paddedBounds.removeFromRight(lineThicknessHalf);
+    paddedBounds.removeFromBottom(lineThicknessHalf);
+    paddedBounds.removeFromTop(lineThicknessHalf);
 
     g.setColour(juce::Colours::black);
     g.drawLine(
-        0,
-        bounds.getHeight() - lineThicknessHalf,
-        getWidth()*attackRatio,
-        lineThicknessHalf,
+        paddedBounds.getX(),
+        paddedBounds.getY() + paddedBounds.getHeight(),
+        paddedBounds.getX() + paddedBounds.getWidth()*attackRatio,
+        paddedBounds.getY(),
         lineThickness
     );
 
     g.drawLine(
-        getWidth()*attackRatio,
-        lineThicknessHalf,
-        getWidth()*(attackRatio + decayRatio),
-        bounds.getHeight()*(1-sustain) + lineThicknessHalf,
+        paddedBounds.getX() + paddedBounds.getWidth()*attackRatio,
+        paddedBounds.getY(),
+        paddedBounds.getX() + paddedBounds.getWidth()*(attackRatio + decayRatio),
+        paddedBounds.getY() + paddedBounds.getHeight()*(1-sustain),
         lineThickness
     );
 
     g.drawLine(
-        getWidth()*(attackRatio + decayRatio),
-        bounds.getHeight()*(1-sustain) + lineThicknessHalf,
-        getWidth(),
-        bounds.getHeight(),
+        paddedBounds.getX() + paddedBounds.getWidth()*(attackRatio + decayRatio),
+        paddedBounds.getY() + paddedBounds.getHeight()*(1-sustain),
+        paddedBounds.getX() + paddedBounds.getWidth(),
+        paddedBounds.getY() + paddedBounds.getHeight(),
         lineThickness
     );
 }

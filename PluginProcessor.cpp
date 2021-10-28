@@ -190,35 +190,35 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
                                                          1));
 
     layout.add(std::make_unique<juce::AudioParameterFloat>("Grain Duration",
-                                                           "Grain Duration",
+                                                           "Duration",
                                                            juce::NormalisableRange<float>(1.f, 1000.f, .01f, .18f),
                                                            1.f));
 
     layout.add(std::make_unique<juce::AudioParameterFloat>("Position",
                                                            "Position",
-                                                           juce::NormalisableRange<float>(0.f, 1.f, .01f, 1.f),
+                                                           juce::NormalisableRange<float>(0.f, 1.f, .0001f, 1.f),
                                                            0.f));
 
     layout.add(std::make_unique<juce::AudioParameterInt>("Synth Attack",
-                                                         "Synth Attack",
+                                                         "Attack",
                                                          0,
                                                          30000,
                                                          0));
 
     layout.add(std::make_unique<juce::AudioParameterInt>("Synth Decay",
-                                                         "Synth Decay",
+                                                         "Decay",
                                                          0,
                                                          30000,
                                                          1000));
 
     layout.add(std::make_unique<juce::AudioParameterInt>("Synth Sustain",
-                                                         "Synth Sustain",
+                                                         "Sustain",
                                                          0,
                                                          100,
                                                          100));
 
     layout.add(std::make_unique<juce::AudioParameterInt>("Synth Release",
-                                                         "Synth Release",
+                                                         "Release",
                                                          0,
                                                          30000,
                                                          1000));

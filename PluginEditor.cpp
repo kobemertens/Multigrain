@@ -27,7 +27,7 @@ void MainAudioThumbnailComponent::paint(juce::Graphics& g)
         paintIfFileLoaded(g, getLocalBounds());
 }
 
-void MainAudioThumbnailComponent::sliderValueChanged (juce::Slider *slider)
+void MainAudioThumbnailComponent::parameterChanged (const juce::String &parameterID, float newValue)
 {
     repaint();
 }
@@ -205,25 +205,6 @@ void MainAudioThumbnailComponent::filesDropped(const juce::StringArray &files, i
 //==============================================================================
 AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAudioProcessor& p)
     : AudioProcessorEditor (&p), processorRef (p),
-    numGrainsSlider              (*processorRef.apvts.getParameter("Num Grains"), ""),
-    grainDurationSlider          (*processorRef.apvts.getParameter("Grain Duration"), ""),
-    positionSlider               (*processorRef.apvts.getParameter("Position"), "%"),
-    synthAttackSlider            (*processorRef.apvts.getParameter("Synth Attack"), "ms", RotarySliderWithLabels::HIGHVALUEINT),
-    synthDecaySlider             (*processorRef.apvts.getParameter("Synth Decay"), "ms", RotarySliderWithLabels::HIGHVALUEINT),
-    synthSustainSlider           (*processorRef.apvts.getParameter("Synth Sustain"), "%"),
-    synthReleaseSlider           (*processorRef.apvts.getParameter("Synth Release"), "ms", RotarySliderWithLabels::HIGHVALUEINT),
-    randomPositionSlider         (*processorRef.apvts.getParameter("Random Position"), "%"),
-
-    numGrainsSliderAttachment     (processorRef.apvts, "Num Grains", numGrainsSlider),
-    grainDurationSliderAttachment (processorRef.apvts, "Grain Duration", grainDurationSlider),
-    positionSliderAttachment      (processorRef.apvts, "Position", positionSlider),
-    synthAttackSliderAttachment   (processorRef.apvts, "Synth Attack", synthAttackSlider),
-    synthDecaySliderAttachment    (processorRef.apvts, "Synth Decay", synthDecaySlider),
-    synthSustainSliderAttachment  (processorRef.apvts, "Synth Sustain", synthSustainSlider),
-    synthReleaseSliderAttachment  (processorRef.apvts, "Synth Release", synthReleaseSlider),
-    reverbToggleButtonAttachment  (processorRef.apvts, "Reverb Toggle", reverbToggleButton),
-    randomPositionSliderAttachment(processorRef.apvts, "Random Position", randomPositionSlider),
-
     keyboardComponent(processorRef.keyboardState, juce::MidiKeyboardComponent::horizontalKeyboard),
     audioThumbnailCache(5),
     audioThumbnailComponent(processorRef, 512, formatManager, audioThumbnailCache),
@@ -232,31 +213,6 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     grainParamsComponent(processorRef.apvts),
     fxTabComponent(processorRef.apvts)
 {
-    numGrainsSlider.labels.add({0.f, "1"});
-    numGrainsSlider.labels.add({1.f, "8"});
-
-    grainDurationSlider.labels.add({0.f, "1"});
-    grainDurationSlider.labels.add({1.f, "1000"});
-
-    positionSlider.labels.add({0.f, "0 %"});
-    positionSlider.labels.add({1.f, "100 %"});
-    positionSlider.addListener(&audioThumbnailComponent);
-
-    synthAttackSlider.labels.add({0.f, "30 ms"});
-    synthAttackSlider.labels.add({1.f, "30k ms"});
-
-    synthDecaySlider.labels.add({0.f, "30 ms"});
-    synthDecaySlider.labels.add({1.f, "30k ms"});
-
-    synthSustainSlider.labels.add({0.f, "0 %"});
-    synthSustainSlider.labels.add({.5f, "50 %"});
-    synthSustainSlider.labels.add({1.f, "100 %"});
-
-    synthReleaseSlider.labels.add({0.f, "30 ms"});
-    synthReleaseSlider.labels.add({1.f, "30k ms"});
-
-    randomPositionSlider.addListener(&audioThumbnailComponent);
-
     for (auto* comp : getComps())
     {
         addAndMakeVisible(comp);
@@ -266,14 +222,19 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     mainTabbedComponent.addTab("Grain", juce::Colours::cornsilk, &grainParamsComponent, false);
     mainTabbedComponent.addTab("Fx", juce::Colours::springgreen, &fxTabComponent, false);
 
-    setSize (600, 400);
+    setSize (500, 700);
 
     formatManager.registerBasicFormats();
+    processorRef.apvts.addParameterListener("Random Position", &audioThumbnailComponent);
+    processorRef.apvts.addParameterListener("Position", &audioThumbnailComponent);
+
+    setResizable(true, false);
 }
 
 AudioPluginAudioProcessorEditor::~AudioPluginAudioProcessorEditor()
 {
-    positionSlider.removeListener(&audioThumbnailComponent);
+    processorRef.apvts.removeParameterListener("Random Position", &audioThumbnailComponent);
+    processorRef.apvts.removeParameterListener("Position", &audioThumbnailComponent);
 }
 
 //==============================================================================
