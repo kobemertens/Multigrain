@@ -123,7 +123,8 @@ void AdsrComponent::AdsrVisualComponent::paint(juce::Graphics& g)
 void AdsrComponent::AdsrVisualComponent::drawGrid(juce::Graphics& g, float ms)
 {
     g.setColour(juce::Colours::grey);
-    ms /= 1000;
+    bool useS = ms > 1000;
+    ms /= useS ? 1000 : 100 ;
     int msFloor = (int) ms;
     float ratio = (float) msFloor / ms;
     float increment = (getWidth()*ratio)/(float) msFloor;
@@ -138,13 +139,13 @@ void AdsrComponent::AdsrVisualComponent::drawGrid(juce::Graphics& g, float ms)
             getHeight()
         );
         juce::String str;
-        str << counter;
-        str << " s";
-        auto labelArea = juce::Rectangle<int>(xIterator + 4, getHeight() - 10, 30, 10);
+        str << (useS ? counter : counter*100) ;
+        str << (useS ? " s" : " ms");
+        auto labelArea = juce::Rectangle<int>(xIterator + 4, getHeight() - 10, 100, 10);
         g.drawText(
             str,
             labelArea,
-            juce::Justification::centred
+            juce::Justification::centredLeft
         );
         xIterator += increment;
         counter++;
