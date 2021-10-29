@@ -260,6 +260,7 @@ void MultigrainVoice::renderNextBlock(juce::AudioSampleBuffer& outputBuffer, int
             grain.renderNextBlock(outputBuffer, startSample + samplesTillNextOnset, numSamples - samplesTillNextOnset);
             samplesTillNextOnset += samplesBetweenOnsets; // TODO allow randomness here
             grainSpawnPosition += (float) samplesBetweenOnsets*apvts.getRawParameterValue("Grain Speed")->load()/100.f;
+            grainSpawnPosition = std::fmod(grainSpawnPosition, sound.length);
         }
 
         samplesTillNextOnset -= numSamples;
