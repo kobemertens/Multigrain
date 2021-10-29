@@ -87,7 +87,7 @@ void GrainSource::processNextBlock(juce::AudioSampleBuffer& bufferToProcess, int
 
         sourceSamplePosition += pitchRatio;
 
-        if (sourceSamplePosition >= sourceData.length)   
+        if (sourceSamplePosition >= sourceData.length)
             sourceSamplePosition -= sourceData.length;
     }
 }
@@ -159,7 +159,7 @@ void GrainEnvelope::processNextBlock(juce::AudioSampleBuffer& bufferToProcess, i
 float GrainEnvelope::getNextSample()
 {
     auto returnValue = amplitude;
-    
+
     if (currentSample == attackSamples)
         amplitudeIncrement = -(grainAmplitude / (float) releaseSamples);
     amplitude += amplitudeIncrement;
@@ -201,7 +201,7 @@ void MultigrainVoice::startNote(int midiNoteNumber, float velocity, juce::Synthe
 
         lgain = velocity;
         rgain = velocity;
-        
+
         adsr.setSampleRate(getSampleRate());
         juce::ADSR::Parameters params(
             (float) apvts.getRawParameterValue("Synth Attack")->load()  / 1000.f,
@@ -248,17 +248,18 @@ void MultigrainVoice::renderNextBlock(juce::AudioSampleBuffer& outputBuffer, int
         auto samplesBetweenOnsets = juce::roundDoubleToInt(
                 getSampleRate() * grainDurationFactor / (currentNoteInHertz*numGrains)
         ); // TODO make samplesTillNextOnset floating point
-        
+
         // Render all active grains
         for(Grain* grain : grains)
             grain->renderNextBlock(outputBuffer, startSample, numSamples);
-        grainSpawnPosition += numSamples;
+
         // Check if new grains need to be activated
         while (samplesTillNextOnset < numSamples)
         {
             Grain& grain = activateNextGrain(grainSpawnPosition, grainDurationSamples);
             grain.renderNextBlock(outputBuffer, startSample + samplesTillNextOnset, numSamples - samplesTillNextOnset);
             samplesTillNextOnset += samplesBetweenOnsets; // TODO allow randomness here
+            grainSpawnPosition += (float) samplesBetweenOnsets*apvts.getRawParameterValue("Grain Speed")->load()/100.f;
         }
 
         samplesTillNextOnset -= numSamples;
