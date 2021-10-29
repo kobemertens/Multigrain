@@ -6,11 +6,13 @@ GrainParamsComponent::GrainParamsComponent(APVTS& apvts)
       positionSlider(*apvts.getParameter("Position"), "%"),
       grainDurationSlider(*apvts.getParameter("Grain Duration"), ""),
       randomPositionSlider(*apvts.getParameter("Random Position"), "%"),
+      grainSpeedSlider(*apvts.getParameter("Grain Speed"), "%"),
 
       numGrainsSliderAttachment(apvts, "Num Grains", numGrainsSlider),
       positionSliderAttachment(apvts, "Position", positionSlider),
       grainDurationSliderAttachment(apvts, "Grain Duration", grainDurationSlider),
-      randomPositionSliderAttachment(apvts, "Random Position", randomPositionSlider)
+      randomPositionSliderAttachment(apvts, "Random Position", randomPositionSlider),
+      grainSpeedSliderAttachment(apvts, "Grain Speed", grainSpeedSlider)
 {
     for (auto* comp : getComps())
     {
@@ -27,13 +29,15 @@ void GrainParamsComponent::resized()
     auto leftUpper = upperHalf.removeFromLeft(upperHalf.getWidth()*0.5);
     auto rightUpper = upperHalf;
 
-    auto leftLower = lowerHalf.removeFromLeft(lowerHalf.getWidth()*0.5);
-    auto rightLower = lowerHalf;
+    auto lowerFirst = lowerHalf.removeFromLeft(lowerHalf.getWidth()*0.33);
+    auto lowerSecond = lowerHalf.removeFromLeft(lowerHalf.getWidth()*0.5);
+    auto lowerThird = lowerHalf;
 
     numGrainsSlider.setBounds(leftUpper);
     positionSlider.setBounds(rightUpper);
-    grainDurationSlider.setBounds(leftLower);
-    randomPositionSlider.setBounds(rightLower);
+    grainDurationSlider.setBounds(lowerFirst);
+    randomPositionSlider.setBounds(lowerSecond);
+    grainSpeedSlider.setBounds(lowerThird);
 }
 
 std::vector<juce::Component*> GrainParamsComponent::getComps()
@@ -43,6 +47,7 @@ std::vector<juce::Component*> GrainParamsComponent::getComps()
         &grainDurationSlider,
         &numGrainsSlider,
         &positionSlider,
-        &randomPositionSlider
+        &randomPositionSlider,
+        &grainSpeedSlider
     };
 }

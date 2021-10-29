@@ -123,6 +123,7 @@ private:
 
     int samplesTillNextOnset;
     unsigned int nextGrainToActivateIndex;
+    double grainSpawnPosition;
 
     juce::ADSR adsr;
 

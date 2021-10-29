@@ -229,6 +229,11 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
                                                            juce::NormalisableRange<float>(0.f, 100.f, 0.01f, 1.f),
                                                            0.f));
 
+    layout.add(std::make_unique<juce::AudioParameterFloat>("Grain Speed",
+                                                           "Speed",
+                                                           juce::NormalisableRange<float>(-200.f, 200.f, .01f, 1.f),
+                                                           0.f));
+
     return layout;
 }
 
