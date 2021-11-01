@@ -19,14 +19,14 @@ private:
     RotarySliderWithLabels numGrainsSlider,
                            grainDurationSlider,
                            positionSlider,
-                           randomPositionSlider;
+                           randomPositionSlider,
+                           grainSpeedSlider;
 
     SliderAttachment numGrainsSliderAttachment,
                      grainDurationSliderAttachment,
                      positionSliderAttachment,
-                     randomPositionSliderAttachment;
-
-    RandomizableSlider grainSpeedSlider;
+                     randomPositionSliderAttachment,
+                     grainSpeedSliderAttachment;
 
     APVTS& apvts;
 

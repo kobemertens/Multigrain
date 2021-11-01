@@ -6,12 +6,13 @@ GrainParamsComponent::GrainParamsComponent(APVTS& apvts)
       positionSlider(*apvts.getParameter("Position"), "%"),
       grainDurationSlider(*apvts.getParameter("Grain Duration"), ""),
       randomPositionSlider(*apvts.getParameter("Position Random"), "%"),
-      grainSpeedSlider(apvts, "Grain Speed", "Grain Speed Random"),
+      grainSpeedSlider(*apvts.getParameter("Grain Speed"), "%"),
 
       numGrainsSliderAttachment(apvts, "Num Grains", numGrainsSlider),
       positionSliderAttachment(apvts, "Position", positionSlider),
       grainDurationSliderAttachment(apvts, "Grain Duration", grainDurationSlider),
-      randomPositionSliderAttachment(apvts, "Position Random", randomPositionSlider)
+      randomPositionSliderAttachment(apvts, "Position Random", randomPositionSlider),
+      grainSpeedSliderAttachment(apvts, "Grain Speed", grainSpeedSlider)
 {
     for (auto* comp : getComps())
     {

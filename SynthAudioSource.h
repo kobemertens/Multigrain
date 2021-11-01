@@ -112,6 +112,7 @@ public:
     void renderNextBlock(juce::AudioSampleBuffer& outputBuffer, int startSample, int numSamples) override;
 private:
     Grain& activateNextGrain(double sourcePosition, int grainDurationInSamples);
+    void updateGrainSpawnPosition(int samplesBetweenOnsets);
     double getNextGrainPosition();
     void deactivateGrains();
     double pitchRatio = 0;

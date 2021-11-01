@@ -183,17 +183,39 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
 {
     juce::AudioProcessorValueTreeState::ParameterLayout layout;
 
+    // Determines the number of grains. 2 grains are offset by 180 deg etc..
     layout.add(std::make_unique<juce::AudioParameterInt>("Num Grains",
                                                          "Num Grains",
                                                          1,
                                                          8,
                                                          1));
 
+    // Increases the grain period by a factor ranging from 1 to 1000
     layout.add(std::make_unique<juce::AudioParameterFloat>("Grain Duration",
                                                            "Duration",
                                                            juce::NormalisableRange<float>(1.f, 1000.f, .0001f, .2f),
                                                            1.f));
 
+    // Grain duration randomness. A setting of 100 % varies between half and twice the grain period.
+    layout.add(std::make_unique<juce::AudioParameterFloat>("Grain Duration Random",
+                                                           "Duration Random",
+                                                           juce::NormalisableRange<float>(0.f, 1.f, .0001f, .1f),
+                                                           0.f));
+
+    // Set between -12 and +12 semitones. Grains are played randomly at their original pitch or the set value.
+    layout.add(std::make_unique<juce::AudioParameterInt>("Grain Pitch Interval",
+                                                         "Pitch Interval",
+                                                         -12,
+                                                         12,
+                                                         0));
+
+    // Allows to set a scale in which the grains are played randomly
+    // layout.add(std::make_unique<juce::AudioParameterChoice>("Grain Pitch Random",
+    //                                                         "Pitch Scale",
+    //                                                         juce::StringArray{},
+    //                                                         0));
+
+    // Playback position of the grains.
     layout.add(std::make_unique<juce::AudioParameterFloat>("Position",
                                                            "Position",
                                                            juce::NormalisableRange<float>(0.f, 1.f, .0001f, 1.f),
@@ -224,20 +246,25 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
                                                           "Reverb Toggle",
                                                           false));
 
+    // Randomizes the playback position of the grains. Calculated separately for each channel of the sample
     layout.add(std::make_unique<juce::AudioParameterFloat>("Position Random",
                                                            "Position Random",
-                                                           juce::NormalisableRange<float>(0.f, 100.f, 0.01f, 1.f),
+                                                           juce::NormalisableRange<float>(0.f, 1.f, .0001f, .2f),
                                                            0.f));
 
     layout.add(std::make_unique<juce::AudioParameterFloat>("Grain Speed",
                                                            "Speed",
-                                                           juce::NormalisableRange<float>(-200.f, 200.f, .01f, 1.f),
+                                                           juce::NormalisableRange<float>(-2.f, 2.f, .0001f, 1.f),
                                                            0.f));
 
-    layout.add(std::make_unique<juce::AudioParameterFloat>("Grain Speed Random",
-                                                           "Grain Speed Random",
-                                                           juce::NormalisableRange<float>(0.f, 100.f, .01f, 1.f),
-                                                           0.f));
+    juce::StringArray grainShapeChoices;
+    grainShapeChoices.add("Triangle");
+    grainShapeChoices.add("Hanning");
+    // Sets the shape of the grain envelope
+    layout.add(std::make_unique<juce::AudioParameterChoice>("Grain Envelope Shape",
+                                                            "Shape",
+                                                            grainShapeChoices,
+                                                            0));
 
     return layout;
 }

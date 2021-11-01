@@ -192,7 +192,7 @@ void MultigrainVoice::startNote(int midiNoteNumber, float velocity, juce::Synthe
 
         currentNoteInHertz = juce::MidiMessage::getMidiNoteInHertz(midiNoteNumber);
         samplesTillNextOnset = 0;
-        grainSpawnPosition = 0;
+        grainSpawnPosition = apvts.getParameter("Position")->getValue()*sound->length;
 
         lgain = velocity;
         rgain = velocity;
@@ -236,13 +236,16 @@ void MultigrainVoice::renderNextBlock(juce::AudioSampleBuffer& outputBuffer, int
         auto grainDurationFactor = apvts.getRawParameterValue("Grain Duration")->load();
         int numGrains = apvts.getRawParameterValue("Num Grains")->load();
 
-        auto grainDurationSamples = juce::roundDoubleToInt(
-                getSampleRate() * grainDurationFactor / currentNoteInHertz
-        ); // TODO make samplesTillNextOnset floating point
+        auto grainDurationSamples = getSampleRate() * grainDurationFactor / currentNoteInHertz;
+        auto samplesBetweenOnsets = juce::roundDoubleToInt(grainDurationSamples/(float) numGrains);
 
-        auto samplesBetweenOnsets = juce::roundDoubleToInt(
-                getSampleRate() * grainDurationFactor / (currentNoteInHertz*numGrains)
-        ); // TODO make samplesTillNextOnset floating point
+        // auto grainDurationSamples = juce::roundDoubleToInt(
+        //         getSampleRate() * grainDurationFactor / currentNoteInHertz
+        // ); // TODO make samplesTillNextOnset floating point
+
+        // auto samplesBetweenOnsets = juce::roundDoubleToInt(
+        //         getSampleRate() * grainDurationFactor / (currentNoteInHertz*numGrains)
+        // ); // TODO make samplesTillNextOnset floating point
 
         // Render all active grains
         for(Grain* grain : grains)
@@ -251,11 +254,10 @@ void MultigrainVoice::renderNextBlock(juce::AudioSampleBuffer& outputBuffer, int
         // Check if new grains need to be activated
         while (samplesTillNextOnset < numSamples)
         {
-            Grain& grain = activateNextGrain(grainSpawnPosition, grainDurationSamples);
+            Grain& grain = activateNextGrain(getNextGrainPosition(), juce::roundDoubleToInt(grainDurationSamples));
             grain.renderNextBlock(outputBuffer, startSample + samplesTillNextOnset, numSamples - samplesTillNextOnset);
             samplesTillNextOnset += samplesBetweenOnsets; // TODO allow randomness here
-            grainSpawnPosition += (float) samplesBetweenOnsets*apvts.getRawParameterValue("Grain Speed")->load()/100.f + (float) samplesBetweenOnsets*randomGenerator.nextDouble()*apvts.getRawParameterValue("Grain Speed Random")->load()/100.f;
-            grainSpawnPosition = std::fmod(grainSpawnPosition, sound.length);
+            updateGrainSpawnPosition(samplesBetweenOnsets);
         }
 
         samplesTillNextOnset -= numSamples;
@@ -268,14 +270,19 @@ void MultigrainVoice::renderNextBlock(juce::AudioSampleBuffer& outputBuffer, int
     }
 }
 
+void MultigrainVoice::updateGrainSpawnPosition(int samplesBetweenOnsets)
+{
+    grainSpawnPosition += (float) samplesBetweenOnsets*apvts.getRawParameterValue("Grain Speed")->load();
+    grainSpawnPosition = std::fmod(grainSpawnPosition, sound.length);
+}
+
 double MultigrainVoice::getNextGrainPosition()
 {
-    // auto randomRange = apvts.getParameter("Position Random")->getValue()*sound.length;
-    // auto randomDouble = randomGenerator.nextDouble();
-    auto samplePosition = apvts.getParameter("Position")->getValue()*sound.length;
-
-    // return samplePosition + (randomRange*randomDouble) - randomRange/2;
-    return samplePosition;
+    auto randomRange = apvts.getParameter("Position Random")->getValue()*sound.length;
+    auto randomDouble = randomGenerator.nextDouble();
+    auto nextPosition = grainSpawnPosition + randomRange*randomDouble - randomRange/2;
+    nextPosition = std::fmod(nextPosition, sound.length);
+    return nextPosition;
 }
 
 Grain& MultigrainVoice::activateNextGrain(double sourcePosition, int grainDurationInSamples)
