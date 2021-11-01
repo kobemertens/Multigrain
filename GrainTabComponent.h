@@ -5,6 +5,7 @@
 
 #include "RotarySliderWithLabels.h"
 #include "PluginProcessor.h"
+#include "RandomizableSlider.h"
 
 class GrainParamsComponent : public juce::Component
 {
@@ -18,14 +19,14 @@ private:
     RotarySliderWithLabels numGrainsSlider,
                            grainDurationSlider,
                            positionSlider,
-                           randomPositionSlider,
-                           grainSpeedSlider;
+                           randomPositionSlider;
 
     SliderAttachment numGrainsSliderAttachment,
                      grainDurationSliderAttachment,
                      positionSliderAttachment,
-                     randomPositionSliderAttachment,
-                     grainSpeedSliderAttachment;
+                     randomPositionSliderAttachment;
+
+    RandomizableSlider grainSpeedSlider;
 
     APVTS& apvts;
 

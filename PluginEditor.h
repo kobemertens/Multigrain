@@ -37,6 +37,9 @@ private:
     void paintIfFileLoaded (juce::Graphics& g, const juce::Rectangle<int>& thumbnailBounds);
     void paintRandomPositionRegion(juce::Graphics& g);
     void setCursorAtPoint(const juce::Point<int>& point);
+    void openFileChooser();
+    void setAudioSource(juce::File& file);
+    std::unique_ptr<juce::FileChooser> chooser;
     juce::AudioThumbnail audioThumbnail;
     juce::AudioThumbnailCache previewAudioThumbnailCache;
     juce::AudioThumbnail previewAudioThumbnail;

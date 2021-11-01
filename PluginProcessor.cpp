@@ -224,14 +224,19 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
                                                           "Reverb Toggle",
                                                           false));
 
-    layout.add(std::make_unique<juce::AudioParameterFloat>("Random Position",
-                                                           "Random Position",
+    layout.add(std::make_unique<juce::AudioParameterFloat>("Position Random",
+                                                           "Position Random",
                                                            juce::NormalisableRange<float>(0.f, 100.f, 0.01f, 1.f),
                                                            0.f));
 
     layout.add(std::make_unique<juce::AudioParameterFloat>("Grain Speed",
                                                            "Speed",
                                                            juce::NormalisableRange<float>(-200.f, 200.f, .01f, 1.f),
+                                                           0.f));
+
+    layout.add(std::make_unique<juce::AudioParameterFloat>("Grain Speed Random",
+                                                           "Grain Speed Random",
+                                                           juce::NormalisableRange<float>(0.f, 100.f, .01f, 1.f),
                                                            0.f));
 
     return layout;

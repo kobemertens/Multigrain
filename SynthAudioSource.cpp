@@ -106,11 +106,6 @@ void Grain::activate(int durationSamples, double sourcePosition, double pitchRat
     isActive = true;
 }
 
-void Grain::deactivate()
-{
-    isActive = false;
-}
-
 void Grain::renderNextBlock(juce::AudioSampleBuffer& outputBuffer, int startSample, int numSamples)
 {
     if (!isActive)
@@ -259,7 +254,7 @@ void MultigrainVoice::renderNextBlock(juce::AudioSampleBuffer& outputBuffer, int
             Grain& grain = activateNextGrain(grainSpawnPosition, grainDurationSamples);
             grain.renderNextBlock(outputBuffer, startSample + samplesTillNextOnset, numSamples - samplesTillNextOnset);
             samplesTillNextOnset += samplesBetweenOnsets; // TODO allow randomness here
-            grainSpawnPosition += (float) samplesBetweenOnsets*apvts.getRawParameterValue("Grain Speed")->load()/100.f;
+            grainSpawnPosition += (float) samplesBetweenOnsets*apvts.getRawParameterValue("Grain Speed")->load()/100.f + (float) samplesBetweenOnsets*randomGenerator.nextDouble()*apvts.getRawParameterValue("Grain Speed Random")->load()/100.f;
             grainSpawnPosition = std::fmod(grainSpawnPosition, sound.length);
         }
 
@@ -275,7 +270,7 @@ void MultigrainVoice::renderNextBlock(juce::AudioSampleBuffer& outputBuffer, int
 
 double MultigrainVoice::getNextGrainPosition()
 {
-    // auto randomRange = apvts.getParameter("Random Position")->getValue()*sound.length;
+    // auto randomRange = apvts.getParameter("Position Random")->getValue()*sound.length;
     // auto randomDouble = randomGenerator.nextDouble();
     auto samplePosition = apvts.getParameter("Position")->getValue()*sound.length;
 
@@ -286,9 +281,9 @@ double MultigrainVoice::getNextGrainPosition()
 Grain& MultigrainVoice::activateNextGrain(double sourcePosition, int grainDurationInSamples)
 {
     Grain* grain = grains[nextGrainToActivateIndex];
-    if (grain->isActive)
-        jassertfalse; // grain voicestealing is happening
-    grains[nextGrainToActivateIndex]->activate(
+    // if (grain->isActive)
+    //     jassertfalse; // grain voicestealing is happening
+    grain->activate(
         grainDurationInSamples,
         sourcePosition,
         pitchRatio,
@@ -304,7 +299,7 @@ Grain& MultigrainVoice::activateNextGrain(double sourcePosition, int grainDurati
 void MultigrainVoice::deactivateGrains()
 {
     for(auto* grain : grains)
-        grain->deactivate();
+        grain->isActive = false;
 }
 
 // SynthAudioSource
@@ -342,6 +337,6 @@ void SynthAudioSource::init(MultigrainSound* sound)
     synth.clearVoices();
 
     synth.addSound(sound);
-    for (int i = 0; i < 1; i++)
+    for (int i = 0; i < numVoices; i++)
         synth.addVoice(new MultigrainVoice(apvts, *sound));
 }

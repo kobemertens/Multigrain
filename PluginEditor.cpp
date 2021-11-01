@@ -46,6 +46,8 @@ void MainAudioThumbnailComponent::mouseDown(const juce::MouseEvent& event)
 {
     if(audioThumbnail.getNumChannels() > 0)
         setCursorAtPoint(event.getPosition());
+    else
+        openFileChooser();
 }
 
 void MainAudioThumbnailComponent::mouseDrag(const juce::MouseEvent& event)
@@ -122,7 +124,7 @@ void MainAudioThumbnailComponent::paintRandomPositionRegion(juce::Graphics& g)
 {
     auto bounds = getLocalBounds();
     auto grainPosition = bounds.getWidth() * processorRef.apvts.getParameter("Position")->getValue();
-    auto randomRangeScaled = bounds.getWidth() * processorRef.apvts.getParameter("Random Position")->getValue();
+    auto randomRangeScaled = bounds.getWidth() * processorRef.apvts.getParameter("Position Random")->getValue();
     auto randomRangeScaledHalf = randomRangeScaled/2;
     g.setColour(juce::Colours::lightseagreen);
 
@@ -178,27 +180,51 @@ void MainAudioThumbnailComponent::filesDropped(const juce::StringArray &files, i
     for (auto string : files)
     {
         auto file = juce::File(string);
-        std::unique_ptr<juce::AudioFormatReader> reader (formatManager.createReaderFor(file));
-        if (reader.get() != nullptr)
+        setAudioSource(file);
+    }
+}
+
+void MainAudioThumbnailComponent::openFileChooser()
+{
+    chooser = std::make_unique<juce::FileChooser> ("Select a Wave file to play...",
+                                                       juce::File{},
+                                                       "*.wav");
+    auto chooserFlags = juce::FileBrowserComponent::openMode
+                        | juce::FileBrowserComponent::canSelectFiles;
+
+    chooser->launchAsync (chooserFlags, [this] (const juce::FileChooser& fc)
+    {
+        auto file = fc.getResult();
+
+        if (file != juce::File{})
         {
-            std::cout << "Reader created!" << std::endl;
-            auto duration = (float) reader->lengthInSamples / reader->sampleRate;
-            if (duration < 10)
-            {
-                previewAudioThumbnail.setSource(nullptr);
-                processorRef.getSynthAudioSource().init(new MultigrainSound(string, *reader, 0, 60, 10));
-                setSource(new juce::FileInputSource(file));
-            }
-            else
-            {
-                // TODO: handle the error that the file is 10 seconds or longer..
-            }
+            setAudioSource(file);
+        }
+    });
+}
+
+void MainAudioThumbnailComponent::setAudioSource(juce::File& file)
+{
+    std::unique_ptr<juce::AudioFormatReader> reader (formatManager.createReaderFor(file));
+    if (reader.get() != nullptr)
+    {
+        std::cout << "Reader created!" << std::endl;
+        auto duration = (float) reader->lengthInSamples / reader->sampleRate;
+        if (duration < 10)
+        {
+            previewAudioThumbnail.setSource(nullptr);
+            processorRef.getSynthAudioSource().init(new MultigrainSound("Default", *reader, 0, 60, 10));
+            setSource(new juce::FileInputSource(file));
         }
         else
         {
-            // TODO: display error message here
-            std::cout << "No reader created!" << std::endl;
+            // TODO: handle the error that the file is 10 seconds or longer..
         }
+    }
+    else
+    {
+        // TODO: display error message here
+        std::cout << "No reader created!" << std::endl;
     }
 }
 
@@ -225,7 +251,7 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     setSize (500, 700);
 
     formatManager.registerBasicFormats();
-    processorRef.apvts.addParameterListener("Random Position", &audioThumbnailComponent);
+    processorRef.apvts.addParameterListener("Position Random", &audioThumbnailComponent);
     processorRef.apvts.addParameterListener("Position", &audioThumbnailComponent);
 
     setResizable(true, false);
@@ -233,7 +259,7 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
 
 AudioPluginAudioProcessorEditor::~AudioPluginAudioProcessorEditor()
 {
-    processorRef.apvts.removeParameterListener("Random Position", &audioThumbnailComponent);
+    processorRef.apvts.removeParameterListener("Position Random", &audioThumbnailComponent);
     processorRef.apvts.removeParameterListener("Position", &audioThumbnailComponent);
 }
 

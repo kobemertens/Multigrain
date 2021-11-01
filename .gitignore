@@ -1,4 +1,6 @@
 JUCE
 build
 .vscode
+.idea
+cmake-build-debug
 testsamples

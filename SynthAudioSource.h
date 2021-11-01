@@ -84,7 +84,6 @@ public:
     Grain(MultigrainSound& sound);
     void renderNextBlock(juce::AudioSampleBuffer& outputBuffer, int startSample, int numSamples);
     void activate(int durationSamples, double sourcePosition, double pitchRatio, float grainAmplitude);
-    void deactivate();
     bool isActive;
 private:
     GrainEnvelope envelope;
@@ -153,6 +152,8 @@ private:
     juce::MidiKeyboardState& keyboardState;
     juce::AudioProcessorValueTreeState& apvts;
     juce::Synthesiser synth;
+
+    int numVoices = 1;
 
     JUCE_LEAK_DETECTOR(SynthAudioSource);
 };
