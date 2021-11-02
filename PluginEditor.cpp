@@ -9,7 +9,7 @@ MainAudioThumbnailComponent::MainAudioThumbnailComponent(AudioPluginAudioProcess
       formatManager(formatManager)
 {
     audioThumbnail.addChangeListener(this);
-    setMouseCursor(juce::MouseCursor::IBeamCursor);
+    setMouseCursor(juce::MouseCursor::PointingHandCursor);
 }
 
 MainAudioThumbnailComponent::~MainAudioThumbnailComponent()
@@ -45,9 +45,14 @@ void MainAudioThumbnailComponent::changeListenerCallback(juce::ChangeBroadcaster
 void MainAudioThumbnailComponent::mouseDown(const juce::MouseEvent& event)
 {
     if(audioThumbnail.getNumChannels() > 0)
+    {
         setCursorAtPoint(event.getPosition());
+    }
     else
+    {
+        setMouseCursor(juce::MouseCursor::WaitCursor);
         openFileChooser();
+    }
 }
 
 void MainAudioThumbnailComponent::mouseDrag(const juce::MouseEvent& event)
@@ -76,7 +81,7 @@ void MainAudioThumbnailComponent::paintIfNoFileLoaded (juce::Graphics& g, const 
     g.setColour(juce::Colours::grey);
     g.fillRect(thumbnailBounds);
     g.setColour(juce::Colours::white);
-    g.drawFittedText("Drag .wav file here", thumbnailBounds, juce::Justification::centred, 1);
+    g.drawFittedText("Drag .wav file here (or click to open file browser)", thumbnailBounds, juce::Justification::centred, 1);
 }
 
 void MainAudioThumbnailComponent::paintIfFileLoaded (juce::Graphics& g, const juce::Rectangle<int>& thumbnailBounds)
@@ -200,11 +205,16 @@ void MainAudioThumbnailComponent::openFileChooser()
         {
             setAudioSource(file);
         }
+        else
+        {
+            setMouseCursor(juce::MouseCursor::PointingHandCursor);
+        }
     });
 }
 
 void MainAudioThumbnailComponent::setAudioSource(juce::File& file)
 {
+    setMouseCursor(juce::MouseCursor::IBeamCursor);
     std::unique_ptr<juce::AudioFormatReader> reader (formatManager.createReaderFor(file));
     if (reader.get() != nullptr)
     {
