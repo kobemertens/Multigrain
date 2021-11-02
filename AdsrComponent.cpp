@@ -58,7 +58,7 @@ void AdsrComponent::paint(juce::Graphics& g)
 {
     auto bounds = getLocalBounds();
     bounds.removeFromTop(getHeight()*0.66);
-    g.setColour(juce::Colours::white);
+    g.setColour(juce::Colour::fromRGB(50, 67, 118));
     g.drawRect(bounds);
 }
 
@@ -70,7 +70,7 @@ AdsrComponent::AdsrVisualComponent::AdsrVisualComponent(AdsrComponent::Parameter
 void AdsrComponent::AdsrVisualComponent::paint(juce::Graphics& g)
 {
     auto bounds = getLocalBounds();
-    g.setColour(juce::Colours::white);
+    g.setColour(juce::Colour::fromRGB(88, 107, 164));
     g.fillRect(bounds);
 
     auto attackMs = apvts.getRawParameterValue(parameters.attackParameter)->load();
@@ -94,7 +94,7 @@ void AdsrComponent::AdsrVisualComponent::paint(juce::Graphics& g)
     paddedBounds.removeFromBottom(lineThicknessHalf);
     paddedBounds.removeFromTop(lineThicknessHalf);
 
-    g.setColour(juce::Colours::black);
+    g.setColour(juce::Colours::white);
     g.drawLine(
         paddedBounds.getX(),
         paddedBounds.getY() + paddedBounds.getHeight(),

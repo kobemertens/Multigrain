@@ -87,7 +87,7 @@ void MainAudioThumbnailComponent::paintIfNoFileLoaded (juce::Graphics& g, const 
 void MainAudioThumbnailComponent::paintIfFileLoaded (juce::Graphics& g, const juce::Rectangle<int>& thumbnailBounds)
 {
     auto bounds = getLocalBounds();
-    g.setColour(juce::Colours::white);
+    g.setColour(juce::Colour::fromRGB(245, 221, 144));
     g.fillRect(thumbnailBounds);
     juce::AudioThumbnail* thumbnailToDraw;
     juce::Colour waveformColour;
@@ -249,14 +249,15 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     grainParamsComponent(processorRef.apvts),
     fxTabComponent(processorRef.apvts)
 {
+    LookAndFeel::getDefaultLookAndFeel().setDefaultSansSerifTypeface(lnf.getMonoFont().getTypefacePtr());
     for (auto* comp : getComps())
     {
         addAndMakeVisible(comp);
     }
 
-    mainTabbedComponent.addTab("ADSR", juce::Colours::bisque, &mainAdsrComponent, false);
-    mainTabbedComponent.addTab("Grain", juce::Colours::cornsilk, &grainParamsComponent, false);
-    mainTabbedComponent.addTab("Fx", juce::Colours::springgreen, &fxTabComponent, false);
+    mainTabbedComponent.addTab("ADSR", juce::Colour::fromRGB(50, 67, 118), &mainAdsrComponent, false);
+    mainTabbedComponent.addTab("Grain", juce::Colour::fromRGB(246, 142, 95), &grainParamsComponent, false);
+    mainTabbedComponent.addTab("Fx", juce::Colour::fromRGB(247, 108, 94), &fxTabComponent, false);
 
     setSize (500, 700);
 

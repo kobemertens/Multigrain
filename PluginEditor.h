@@ -8,6 +8,7 @@
 #include "AdsrComponent.h"
 #include "GrainTabComponent.h"
 #include "FxTabComponent.h"
+#include "LookAndFeel.h"
 
 class MainAudioThumbnailComponent : public juce::Component,
                                     public juce::AudioProcessorValueTreeState::Listener,
@@ -44,6 +45,7 @@ private:
     juce::AudioThumbnailCache previewAudioThumbnailCache;
     juce::AudioThumbnail previewAudioThumbnail;
     juce::AudioFormatManager& formatManager;
+    LookAndFeel lnf;
     AudioPluginAudioProcessor& processorRef;
 };
 
@@ -89,6 +91,7 @@ private:
     AdsrComponent mainAdsrComponent;
     GrainParamsComponent grainParamsComponent;
     FxTabComponent fxTabComponent;
+    LookAndFeel lnf;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessorEditor)
 };

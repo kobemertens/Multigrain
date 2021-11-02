@@ -27,7 +27,7 @@ void FxTabComponent::resized()
 void FxTabComponent::paint(juce::Graphics& g)
 {
     auto bounds = getLocalBounds();
-    g.setColour(juce::Colours::black);
+    g.setColour(juce::Colour::fromRGB(247, 108, 94));
     g.fillRect(bounds);
     auto reverbPart = bounds.removeFromLeft(bounds.getWidth()*0.5);
     auto delayPart = bounds;
