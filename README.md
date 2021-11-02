@@ -10,5 +10,5 @@ A simple stored sample granulator, written using the JUCE framework.
 - **Position Random**: When set to 100%, grains are played back at a random position across the sample.
 
 ## Build
-Add your JUCE repository to the root of this repository or use a symbolic link.
-Use cmake tool of choice to build the project. (vscode has a great cmake plugin)
+Add your JUCE repository (`develop` branch) to the root of this repository or use a symbolic link.
+Use your favorite CMake tool to build the project. Or use an IDE that supports CMake (vscode has a great CMake plugin).
