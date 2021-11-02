@@ -12,4 +12,6 @@ A simple stored sample granulator, written using the JUCE framework.
 ## Build
 Add your JUCE repository (`develop` branch) to the root of this repository or use a symbolic link.
 Use your favorite CMake tool to build the project. Or use an IDE that supports CMake (vscode has a great CMake plugin).
+
+
 _currently only works in Standalone build target_
