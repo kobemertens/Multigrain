@@ -3,6 +3,15 @@
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_audio_formats/juce_audio_formats.h>
 
+/** 
+ * Represents the playback position of a grain in a buffer
+ */
+struct GrainPosition
+{
+    double leftPosition;
+    double rightPosition;
+};
+
 /**
  * Manages sourceData buffer and channel-note-mask
  */
@@ -63,15 +72,16 @@ private:
 class GrainSource
 {
 public:
-    GrainSource(MultigrainSound& sourceData, GrainEnvelope& env);
+    GrainSource(MultigrainSound& sourceData, GrainEnvelope& env, juce::ADSR& globalEnvelope);
     void processNextBlock(juce::AudioSampleBuffer& bufferToProcess, int startSample, int numSamples); // write information about pitch here
-    void init(double startPosition, double pitchRatio);
+    void init(GrainPosition sourceSamplePosition, double pitchRatio);
 
 private:
     GrainEnvelope& env;
     double pitchRatio;
-    double sourceSamplePosition;
+    GrainPosition sourceSamplePosition;
     MultigrainSound& sourceData;
+    juce::ADSR& globalEnvelope;
 };
 
 
@@ -81,9 +91,9 @@ private:
 class Grain
 {
 public:
-    Grain(MultigrainSound& sound);
+    Grain(MultigrainSound& sound, juce::ADSR& globalEnvelope);
     void renderNextBlock(juce::AudioSampleBuffer& outputBuffer, int startSample, int numSamples);
-    void activate(int durationSamples, double sourcePosition, double pitchRatio, float grainAmplitude);
+    void activate(int durationSamples, GrainPosition sourcePosition, double pitchRatio, float grainAmplitude);
     bool isActive;
 private:
     GrainEnvelope envelope;
@@ -111,9 +121,9 @@ public:
 
     void renderNextBlock(juce::AudioSampleBuffer& outputBuffer, int startSample, int numSamples) override;
 private:
-    Grain& activateNextGrain(double sourcePosition, int grainDurationInSamples);
+    Grain& activateNextGrain(GrainPosition grainPosition, int grainDurationInSamples);
     void updateGrainSpawnPosition(int samplesBetweenOnsets);
-    double getNextGrainPosition();
+    GrainPosition getNextGrainPosition();
     void deactivateGrains();
     double pitchRatio = 0;
     double sourceSamplePosition = 0;
@@ -154,7 +164,7 @@ private:
     juce::AudioProcessorValueTreeState& apvts;
     juce::Synthesiser synth;
 
-    int numVoices = 1;
+    int numVoices = 64;
 
     JUCE_LEAK_DETECTOR(SynthAudioSource);
 };

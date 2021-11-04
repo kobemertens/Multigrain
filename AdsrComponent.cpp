@@ -122,7 +122,7 @@ void AdsrComponent::AdsrVisualComponent::paint(juce::Graphics& g)
 
 void AdsrComponent::AdsrVisualComponent::drawGrid(juce::Graphics& g, float ms)
 {
-    g.setColour(juce::Colours::grey);
+    g.setColour(juce::Colours::white);
     bool useS = ms > 1000;
     ms /= useS ? 1000 : 100 ;
     int msFloor = (int) ms;

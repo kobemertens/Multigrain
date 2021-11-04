@@ -183,6 +183,11 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
 {
     juce::AudioProcessorValueTreeState::ParameterLayout layout;
 
+    layout.add(std::make_unique<juce::AudioParameterFloat>("Master Gain",
+                                                           "Master Gain",
+                                                           juce::NormalisableRange<float>(0.f, 1.f, .0001f, 1.f),
+                                                           1.f));
+
     // Determines the number of grains. 2 grains are offset by 180 deg etc..
     layout.add(std::make_unique<juce::AudioParameterInt>("Num Grains",
                                                          "Num Grains",

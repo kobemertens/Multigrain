@@ -92,6 +92,8 @@ private:
     GrainParamsComponent grainParamsComponent;
     FxTabComponent fxTabComponent;
     LookAndFeel lnf;
+    // RotarySliderWithLabels masterGainSlider;
+    // SliderAttachment masterGainSliderAttachment;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessorEditor)
 };

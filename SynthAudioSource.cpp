@@ -36,19 +36,26 @@ bool MultigrainSound::appliesToChannel(int /*midiChannel*/)
 }
 
 // GrainSource
-GrainSource::GrainSource(MultigrainSound& sourceData, GrainEnvelope& env)
-    : sourceData(sourceData), env(env) {}
+GrainSource::GrainSource(MultigrainSound& sourceData, GrainEnvelope& env, juce::ADSR& globalEnvelope)
+    : sourceData(sourceData), env(env), globalEnvelope(globalEnvelope) {}
 
-void GrainSource::init(double startPosition, double pitchRatio)
+void GrainSource::init(GrainPosition initPosition, double pitchRatio)
 {
     this->pitchRatio = pitchRatio;
-    if (startPosition >= sourceData.length)
-        startPosition -= sourceData.length;
+    if (initPosition.leftPosition >= sourceData.length)
+        initPosition.leftPosition -= sourceData.length;
 
-    if (startPosition < 0.)
-        startPosition = sourceData.length + startPosition;
+    if (initPosition.rightPosition >= sourceData.length)
+        initPosition.rightPosition -= sourceData.length;
 
-    sourceSamplePosition = startPosition;
+
+    if (initPosition.leftPosition < 0.)
+        initPosition.leftPosition = sourceData.length + initPosition.leftPosition;
+
+    if (initPosition.rightPosition < 0.)
+        initPosition.rightPosition = sourceData.length + initPosition.rightPosition;
+
+    sourceSamplePosition = initPosition;
 }
 
 void GrainSource::processNextBlock(juce::AudioSampleBuffer& bufferToProcess, int startSample, int numSamples)
@@ -62,16 +69,21 @@ void GrainSource::processNextBlock(juce::AudioSampleBuffer& bufferToProcess, int
     float nextEnvelopeSample;
     while(--numSamples >= 0)
     {
-        auto pos = (int) sourceSamplePosition;
-        auto alpha = (float) (sourceSamplePosition - pos);
-        auto invAlpha = 1.0f - alpha;
+        auto posLeft = (int) sourceSamplePosition.leftPosition;
+        auto alphaLeft = (float) (sourceSamplePosition.leftPosition - posLeft);
+        auto invAlphaLeft = 1.f - alphaLeft;
 
+        auto posRight = (int) sourceSamplePosition.rightPosition;
+        auto alphaRight = (float) (sourceSamplePosition.rightPosition - posRight);
+        auto invAlphaRight = 1.f - alphaRight;
+     
         // just using a very simple linear interpolation here..
-        float l = (inL[pos] * invAlpha + inL[pos + 1] * alpha);
-        float r = (inR != nullptr) ? (inR[pos] * invAlpha + inR[pos + 1] * alpha)
-                                   : l;
+        float l = (inL[posLeft] * invAlphaLeft + inL[posLeft + 1] * alphaLeft);
+        float r = (inR != nullptr) ? (inR[posRight] * invAlphaRight + inR[posRight + 1] * alphaRight)
+                                   : (inL[posRight] * invAlphaRight + inL[posRight + 1] * alphaRight); // use the left channel if mono sample was provided
 
         nextEnvelopeSample = env.getNextSample();
+
         l *= nextEnvelopeSample;
         r *= nextEnvelopeSample;
 
@@ -85,23 +97,27 @@ void GrainSource::processNextBlock(juce::AudioSampleBuffer& bufferToProcess, int
             *outL++ += (l + r) * 0.5f;
         }
 
-        sourceSamplePosition += pitchRatio;
+        sourceSamplePosition.leftPosition += pitchRatio;
+        sourceSamplePosition.rightPosition += pitchRatio;
 
-        if (sourceSamplePosition >= sourceData.length)
-            sourceSamplePosition -= sourceData.length;
+        if (sourceSamplePosition.rightPosition >= sourceData.length)
+            sourceSamplePosition.rightPosition -= sourceData.length;
+
+        if (sourceSamplePosition.leftPosition >= sourceData.length)
+            sourceSamplePosition.leftPosition -= sourceData.length;
     }
 }
 
 // Grain
-Grain::Grain(MultigrainSound& sound)
-    : source(sound, envelope),
+Grain::Grain(MultigrainSound& sound, juce::ADSR& globalEnvelope)
+    : source(sound, envelope, globalEnvelope),
       isActive(false)
 {}
 
-void Grain::activate(int durationSamples, double sourcePosition, double pitchRatio, float grainAmplitude)
+void Grain::activate(int durationSamples, GrainPosition grainPosition, double pitchRatio, float grainAmplitude)
 {
     samplesRemaining = durationSamples;
-    source.init(sourcePosition, pitchRatio);
+    source.init(grainPosition, pitchRatio);
     envelope.init(durationSamples, grainAmplitude);
     isActive = true;
 }
@@ -172,7 +188,7 @@ MultigrainVoice::MultigrainVoice(juce::AudioProcessorValueTreeState& apvts, Mult
 {
     // init grain array
     for(int i = 0; i < 8; i++)
-        grains.add(new Grain(sound));
+        grains.add(new Grain(sound, adsr));
 }
 
 MultigrainVoice::~MultigrainVoice(){}
@@ -239,14 +255,6 @@ void MultigrainVoice::renderNextBlock(juce::AudioSampleBuffer& outputBuffer, int
         auto grainDurationSamples = getSampleRate() * grainDurationFactor / currentNoteInHertz;
         auto samplesBetweenOnsets = juce::roundDoubleToInt(grainDurationSamples/(float) numGrains);
 
-        // auto grainDurationSamples = juce::roundDoubleToInt(
-        //         getSampleRate() * grainDurationFactor / currentNoteInHertz
-        // ); // TODO make samplesTillNextOnset floating point
-
-        // auto samplesBetweenOnsets = juce::roundDoubleToInt(
-        //         getSampleRate() * grainDurationFactor / (currentNoteInHertz*numGrains)
-        // ); // TODO make samplesTillNextOnset floating point
-
         // Render all active grains
         for(Grain* grain : grains)
             grain->renderNextBlock(outputBuffer, startSample, numSamples);
@@ -276,23 +284,26 @@ void MultigrainVoice::updateGrainSpawnPosition(int samplesBetweenOnsets)
     grainSpawnPosition = std::fmod(grainSpawnPosition, sound.length);
 }
 
-double MultigrainVoice::getNextGrainPosition()
+GrainPosition MultigrainVoice::getNextGrainPosition()
 {
     auto randomRange = apvts.getParameter("Position Random")->getValue()*sound.length;
     auto randomDouble = randomGenerator.nextDouble();
-    auto nextPosition = grainSpawnPosition + randomRange*randomDouble - randomRange/2;
-    nextPosition = std::fmod(nextPosition, sound.length);
-    return nextPosition;
+    auto nextPosLeft = grainSpawnPosition + randomRange*randomDouble - randomRange/2;
+    randomDouble = randomGenerator.nextDouble();
+    auto nextPosRight = grainSpawnPosition + randomRange*randomDouble - randomRange/2;
+    nextPosLeft = std::fmod(nextPosLeft, sound.length);
+    nextPosRight = std::fmod(nextPosRight, sound.length);
+    return {nextPosLeft, nextPosRight};
 }
 
-Grain& MultigrainVoice::activateNextGrain(double sourcePosition, int grainDurationInSamples)
+Grain& MultigrainVoice::activateNextGrain(GrainPosition grainPosition, int grainDurationInSamples)
 {
     Grain* grain = grains[nextGrainToActivateIndex];
     // if (grain->isActive)
     //     jassertfalse; // grain voicestealing is happening
     grain->activate(
         grainDurationInSamples,
-        sourcePosition,
+        grainPosition,
         pitchRatio,
         1.f // TODO allow randomization of this value
     );
