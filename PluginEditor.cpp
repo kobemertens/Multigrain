@@ -247,7 +247,9 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     mainAdsrComponent(processorRef, {"Synth Attack", "Synth Decay", "Synth Sustain", "Synth Release"}),
     mainTabbedComponent(juce::TabbedButtonBar::Orientation::TabsAtTop),
     grainParamsComponent(processorRef.apvts),
-    fxTabComponent(processorRef.apvts)
+    fxTabComponent(processorRef.apvts),
+    masterGainSlider(*processorRef.apvts.getParameter("Master Gain"), "%"),
+    masterGainSliderAttachment(processorRef.apvts, "Master Gain", masterGainSlider)
 {
     LookAndFeel::getDefaultLookAndFeel().setDefaultSansSerifTypeface(lnf.getMonoFont().getTypefacePtr());
     for (auto* comp : getComps())
@@ -279,7 +281,7 @@ void AudioPluginAudioProcessorEditor::paint (juce::Graphics& g)
 {
     // (Our component is opaque, so we must completely fill the background with a solid colour)
     // g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
-    g.fillAll(juce::Colours::black);
+    g.fillAll(juce::Colour::fromRGB(50, 67, 118));
 
     // g.setColour (juce::Colours::white);
     // g.setFont (15.0f);
@@ -291,12 +293,14 @@ void AudioPluginAudioProcessorEditor::resized()
     auto bounds = getLocalBounds();
 
     waveformArea = bounds.removeFromTop(bounds.getHeight() * 0.25);
+    auto generalSettings = bounds.removeFromTop(bounds.getHeight()*0.2);
     auto tabbedComponentArea = bounds.removeFromTop(bounds.getHeight() * 0.75);
     auto keyboardArea = bounds;
     keyboardComponent.setBounds(keyboardArea);
     audioThumbnailComponent.setBounds(waveformArea);
 
     mainTabbedComponent.setBounds(tabbedComponentArea);
+    masterGainSlider.setBounds(generalSettings);
 }
 
 std::vector<juce::Component*> AudioPluginAudioProcessorEditor::getComps()
@@ -305,6 +309,7 @@ std::vector<juce::Component*> AudioPluginAudioProcessorEditor::getComps()
     {
         &keyboardComponent,
         &audioThumbnailComponent,
-        &mainTabbedComponent
+        &mainTabbedComponent,
+        &masterGainSlider
     };
 }

@@ -164,7 +164,7 @@ private:
     juce::AudioProcessorValueTreeState& apvts;
     juce::Synthesiser synth;
 
-    int numVoices = 64;
+    int numVoices = 1;
 
     JUCE_LEAK_DETECTOR(SynthAudioSource);
 };

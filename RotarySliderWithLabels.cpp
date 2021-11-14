@@ -79,7 +79,7 @@ juce::String RotarySliderWithLabels::getDisplayString() const
     if(auto* floatParam = dynamic_cast<juce::AudioParameterFloat*>(param))
     {
         float val = getValue();
-        if(floatParam->paramID == "Position")
+        if(suffix == "%")
         {
             val *= 100;
             isPercent = true;

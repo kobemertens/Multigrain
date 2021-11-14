@@ -149,6 +149,8 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
 
     if (apvts.getParameter("Reverb Toggle")->getValue())
         reverb.processStereo(outL, outR, buffer.getNumSamples());
+
+    buffer.applyGain(apvts.getParameter("Master Gain")->getValue());
 }
 
 //==============================================================================

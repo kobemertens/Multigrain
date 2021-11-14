@@ -36,11 +36,11 @@ void FxTabComponent::paint(juce::Graphics& g)
     g.fillRect(reverbPart);
 
     colour = apvts.getParameter("Reverb Toggle")->getValue() ? juce::Colours::lightcoral : juce::Colours::grey;
-    g.setColour(colour);
-    g.fillRect(delayPart);
+    // g.setColour(colour);
+    // g.fillRect(delayPart);
     g.setColour(juce::Colours::white);
     g.drawText("Reverb", reverbPart, juce::Justification::centred);
-    g.drawText("Delay", delayPart, juce::Justification::centred);
+    // g.drawText("Delay", delayPart, juce::Justification::centred);
 }
 
 void FxTabComponent::buttonClicked (juce::Button *)
