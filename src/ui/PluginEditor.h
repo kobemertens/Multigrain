@@ -3,7 +3,7 @@
 #include <juce_audio_formats/juce_audio_formats.h>
 #include <juce_audio_utils/juce_audio_utils.h>
 
-#include "PluginProcessor.h"
+#include "../audio_processor/PluginProcessor.h"
 #include "RotarySliderWithLabels.h"
 #include "AdsrComponent.h"
 #include "GrainTabComponent.h"

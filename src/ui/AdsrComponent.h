@@ -3,7 +3,7 @@
 #include <juce_audio_basics/juce_audio_basics.h>
 #include <juce_gui_basics/juce_gui_basics.h>
 
-#include "PluginProcessor.h"
+#include "../audio_processor/PluginProcessor.h"
 #include "RotarySliderWithLabels.h"
 
 class AdsrVisualComponent;

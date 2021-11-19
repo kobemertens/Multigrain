@@ -4,7 +4,7 @@
 #include <juce_gui_basics/juce_gui_basics.h>
 
 #include "RotarySliderWithLabels.h"
-#include "PluginProcessor.h"
+#include "../audio_processor/PluginProcessor.h"
 #include "RandomizableSlider.h"
 
 class GrainParamsComponent : public juce::Component

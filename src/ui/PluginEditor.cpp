@@ -1,4 +1,4 @@
-#include "PluginProcessor.h"
+#include "../audio_processor/PluginProcessor.h"
 #include "PluginEditor.h"
 
 MainAudioThumbnailComponent::MainAudioThumbnailComponent(AudioPluginAudioProcessor& processorRef, int sourceSamplesPerThumbnailSample, juce::AudioFormatManager& formatManager, juce::AudioThumbnailCache& cacheToUse)
