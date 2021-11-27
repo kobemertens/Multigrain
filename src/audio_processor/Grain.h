@@ -13,9 +13,9 @@
 class GrainEnvelope
 {
 public:
-    void processNextBlock(juce::AudioSampleBuffer& bufferToProcess, int startSample, int numSamples);
     void init(int durationSamples, float grainAmplitude);
     float getNextSample();
+    void processNextBlock(juce::AudioSampleBuffer& bufferToProcess, int startSample, int numSamples);
 private:
     float amplitude;
     float grainAmplitude;
@@ -32,16 +32,15 @@ private:
 class GrainSource
 {
 public:
-    GrainSource(MultigrainSound& sourceData, GrainEnvelope& env, juce::ADSR& globalEnvelope);
-    void processNextBlock(juce::AudioSampleBuffer& bufferToProcess, int startSample, int numSamples); // write information about pitch here
+    GrainSource(MultigrainSound& sound);
     void init(GrainPosition sourceSamplePosition, double pitchRatio);
+    float getNextSample();
+    void processNextBlock(juce::AudioSampleBuffer& bufferToProcess, int startSample, int numSamples); // write information about pitch here
 
 private:
-    GrainEnvelope& env;
     double pitchRatio;
     GrainPosition sourceSamplePosition;
-    MultigrainSound& sourceData;
-    juce::ADSR& globalEnvelope;
+    MultigrainSound& sound;
 };
 
 
@@ -51,9 +50,10 @@ private:
 class Grain
 {
 public:
-    Grain(MultigrainSound& sound, juce::ADSR& globalEnvelope);
-    void renderNextBlock(juce::AudioSampleBuffer& outputBuffer, int startSample, int numSamples);
+    Grain(MultigrainSound& sound);
     void activate(int durationSamples, GrainPosition sourcePosition, double pitchRatio, float grainAmplitude);
+    float getNextSample();
+    void renderNextBlock(juce::AudioSampleBuffer& outputBuffer, int startSample, int numSamples);
     bool isActive;
 private:
     GrainEnvelope envelope;

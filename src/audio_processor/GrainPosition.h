@@ -11,4 +11,21 @@ struct GrainPosition
 {
     double leftPosition;
     double rightPosition;
+
+    template<typename FloatType>
+    GrainPosition fmod(FloatType x) const noexcept
+    {
+        return {std::fmod(leftPosition, x), std::fmod(rightPosition, x)};
+    }
+
+    GrainPosition operator+(GrainPosition other)
+    {
+        return {leftPosition + other.leftPosition, rightPosition + other.rightPosition};
+    }
+
+
+    GrainPosition operator+(double x)
+    {
+        return {leftPosition + x, rightPosition + x};
+    }
 };

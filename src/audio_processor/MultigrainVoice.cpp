@@ -13,7 +13,7 @@ MultigrainVoice::MultigrainVoice(juce::AudioProcessorValueTreeState& apvts, Mult
 {
     // init grain array
     for(int i = 0; i < 8; i++)
-        grains.add(new Grain(sound, adsr));
+        grains.add(new Grain(sound));
 }
 
 MultigrainVoice::~MultigrainVoice(){}
@@ -80,26 +80,67 @@ void MultigrainVoice::renderNextBlock(juce::AudioSampleBuffer& outputBuffer, int
         auto grainDurationSamples = getSampleRate() * grainDurationFactor / currentNoteInHertz;
         auto samplesBetweenOnsets = juce::roundDoubleToInt(grainDurationSamples/(float) numGrains);
 
-        // Render all active grains
-        for(Grain* grain : grains)
-            grain->renderNextBlock(outputBuffer, startSample, numSamples);
+        // // Render all active grains
+        // for(Grain* grain : grains)
+        //     grain->renderNextBlock(outputBuffer, startSample, numSamples);
 
-        // Check if new grains need to be activated
-        while (samplesTillNextOnset < numSamples)
+        // // Check if new grains need to be activated
+        // while (samplesTillNextOnset < numSamples)
+        // {
+        //     Grain& grain = activateNextGrain(getNextGrainPosition(), juce::roundDoubleToInt(grainDurationSamples));
+        //     grain.renderNextBlock(outputBuffer, startSample + samplesTillNextOnset, numSamples - samplesTillNextOnset);
+        //     samplesTillNextOnset += samplesBetweenOnsets; // TODO allow randomness here
+        //     updateGrainSpawnPosition(samplesBetweenOnsets);
+        // }
+
+        // samplesTillNextOnset -= numSamples;
+
+        // adsr.applyEnvelopeToBuffer(outputBuffer, startSample, numSamples);
+        // // outputBuffer.applyGain(1/(float) numGrains);
+
+        float* outL = outputBuffer.getWritePointer(0, startSample);
+        float* outR = outputBuffer.getNumChannels() > 1 ? outputBuffer.getWritePointer(1, startSample) : nullptr;
+
+        while(--numSamples >= 0)
         {
-            Grain& grain = activateNextGrain(getNextGrainPosition(), juce::roundDoubleToInt(grainDurationSamples));
-            grain.renderNextBlock(outputBuffer, startSample + samplesTillNextOnset, numSamples - samplesTillNextOnset);
-            samplesTillNextOnset += samplesBetweenOnsets; // TODO allow randomness here
-            updateGrainSpawnPosition(samplesBetweenOnsets);
+
+            if(samplesTillNextOnset == 0)
+            {
+                activateNextGrain(getNextGrainPosition(), juce::roundDoubleToInt(grainDurationSamples));
+                samplesTillNextOnset += samplesBetweenOnsets;
+                updateGrainSpawnPosition(samplesBetweenOnsets);
+            }
+            for(Grain* grain : grains)
+            {
+                float grainSample = grain->getNextSample();
+                if (outR != nullptr)
+                {
+                    *outL += grainSample;
+                    *outR += grainSample;
+                }
+                else
+                {
+                    // is actually (left+right)/2
+                    *outL += (grainSample + grainSample) * 0.5f;
+                }
+            }
+
+            auto envelopeValue = adsr.getNextSample();
+
+            *outL *= envelopeValue;
+            *outR *= envelopeValue;
+            outL++;
+            outR++;
+
+            if (!adsr.isActive())
+            {
+                clearCurrentNote();
+                return;
+            }
+
+            samplesTillNextOnset--;
         }
 
-        samplesTillNextOnset -= numSamples;
-
-        adsr.applyEnvelopeToBuffer(outputBuffer, startSample, numSamples);
-        // outputBuffer.applyGain(1/(float) numGrains);
-
-        if (!adsr.isActive())
-            clearCurrentNote();
     }
 }
 

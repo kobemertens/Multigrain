@@ -6,8 +6,8 @@
 
 
 // Grain
-Grain::Grain(MultigrainSound& sound, juce::ADSR& globalEnvelope)
-        : source(sound, envelope, globalEnvelope),
+Grain::Grain(MultigrainSound& sound)
+        : source(sound),
           isActive(false)
 {}
 
@@ -19,8 +19,25 @@ void Grain::activate(int durationSamples, GrainPosition grainPosition, double pi
     isActive = true;
 }
 
+float Grain::getNextSample()
+{
+    if (!isActive)
+        return 0.f;
+
+    auto sourceSample = source.getNextSample();
+    auto envelopeValue = envelope.getNextSample();
+
+    samplesRemaining--;
+
+    isActive = samplesRemaining > 0;
+
+    return sourceSample*envelopeValue;
+}
+
 void Grain::renderNextBlock(juce::AudioSampleBuffer& outputBuffer, int startSample, int numSamples)
 {
+    jassertfalse; // this function should not be used for now
+
     if (!isActive)
         return;
 
@@ -49,8 +66,22 @@ void GrainEnvelope::init(int durationSamples, float grainAmplitude)
     amplitudeIncrement = grainAmplitude / (float) attackSamples;
 }
 
+float GrainEnvelope::getNextSample()
+{
+    auto returnValue = amplitude;
+
+    if (currentSample == attackSamples)
+        amplitudeIncrement = -(grainAmplitude / (float) releaseSamples);
+    amplitude += amplitudeIncrement;
+    currentSample++;
+
+    return returnValue;
+}
+
 void GrainEnvelope::processNextBlock(juce::AudioSampleBuffer& bufferToProcess, int startSample, int numSamples)
 {
+    jassertfalse; // this function should not be used for now
+
     float* outL = bufferToProcess.getWritePointer(0, startSample);
     float* outR = bufferToProcess.getNumChannels() > 1 ? bufferToProcess.getWritePointer(1, startSample) : nullptr;
 
@@ -64,44 +95,48 @@ void GrainEnvelope::processNextBlock(juce::AudioSampleBuffer& bufferToProcess, i
     }
 }
 
-float GrainEnvelope::getNextSample()
-{
-    auto returnValue = amplitude;
-
-    if (currentSample == attackSamples)
-        amplitudeIncrement = -(grainAmplitude / (float) releaseSamples);
-    amplitude += amplitudeIncrement;
-    currentSample++;
-
-    return returnValue;
-}
-
 // GrainSource
-GrainSource::GrainSource(MultigrainSound& sourceData, GrainEnvelope& env, juce::ADSR& globalEnvelope)
-        : sourceData(sourceData), env(env), globalEnvelope(globalEnvelope) {}
+GrainSource::GrainSource(MultigrainSound& sound)
+        : sound(sound) {}
 
 void GrainSource::init(GrainPosition initPosition, double pitchRatio)
 {
     this->pitchRatio = pitchRatio;
-    if (initPosition.leftPosition >= sourceData.length)
-        initPosition.leftPosition -= sourceData.length;
+    sourceSamplePosition = initPosition.fmod(sound.length);
+}
 
-    if (initPosition.rightPosition >= sourceData.length)
-        initPosition.rightPosition -= sourceData.length;
+float GrainSource::getNextSample()
+{
+    juce::AudioSampleBuffer* data = sound.getAudioData();
+    const float* const inL = data->getReadPointer (0);
+    const float* const inR = data->getNumChannels() > 1 ? data->getReadPointer (1) : nullptr;
+
+    auto posLeft = (int) sourceSamplePosition.leftPosition;
+    auto alphaLeft = (float) (sourceSamplePosition.leftPosition - posLeft);
+    auto invAlphaLeft = 1.f - alphaLeft;
+
+    auto posRight = (int) sourceSamplePosition.rightPosition;
+    auto alphaRight = (float) (sourceSamplePosition.rightPosition - posRight);
+    auto invAlphaRight = 1.f - alphaRight;
+
+    // just using a very simple linear interpolation here..
+    float l = (inL[posLeft] * invAlphaLeft + inL[posLeft + 1] * alphaLeft);
+    float r = (inR != nullptr) ? (inR[posRight] * invAlphaRight + inR[posRight + 1] * alphaRight)
+                                : (inL[posRight] * invAlphaRight + inL[posRight + 1] * alphaRight); // use the left channel if mono sample was provided
 
 
-    if (initPosition.leftPosition < 0.)
-        initPosition.leftPosition = sourceData.length + initPosition.leftPosition;
+    sourceSamplePosition = sourceSamplePosition + pitchRatio;
 
-    if (initPosition.rightPosition < 0.)
-        initPosition.rightPosition = sourceData.length + initPosition.rightPosition;
+    sourceSamplePosition = sourceSamplePosition.fmod(sound.length);
 
-    sourceSamplePosition = initPosition;
+    return l;
 }
 
 void GrainSource::processNextBlock(juce::AudioSampleBuffer& bufferToProcess, int startSample, int numSamples)
 {
-    juce::AudioSampleBuffer* data = sourceData.getAudioData();
+    jassertfalse; // this function should not be used for now
+
+    juce::AudioSampleBuffer* data = sound.getAudioData();
     const float* const inL = data->getReadPointer (0);
     const float* const inR = data->getNumChannels() > 1 ? data->getReadPointer (1) : nullptr;
 
@@ -123,7 +158,6 @@ void GrainSource::processNextBlock(juce::AudioSampleBuffer& bufferToProcess, int
         float r = (inR != nullptr) ? (inR[posRight] * invAlphaRight + inR[posRight + 1] * alphaRight)
                                    : (inL[posRight] * invAlphaRight + inL[posRight + 1] * alphaRight); // use the left channel if mono sample was provided
 
-        nextEnvelopeSample = env.getNextSample();
 
         l *= nextEnvelopeSample;
         r *= nextEnvelopeSample;
@@ -141,10 +175,10 @@ void GrainSource::processNextBlock(juce::AudioSampleBuffer& bufferToProcess, int
         sourceSamplePosition.leftPosition += pitchRatio;
         sourceSamplePosition.rightPosition += pitchRatio;
 
-        if (sourceSamplePosition.rightPosition >= sourceData.length)
-            sourceSamplePosition.rightPosition -= sourceData.length;
+        if (sourceSamplePosition.rightPosition >= sound.length)
+            sourceSamplePosition.rightPosition -= sound.length;
 
-        if (sourceSamplePosition.leftPosition >= sourceData.length)
-            sourceSamplePosition.leftPosition -= sourceData.length;
+        if (sourceSamplePosition.leftPosition >= sound.length)
+            sourceSamplePosition.leftPosition -= sound.length;
     }
 }
