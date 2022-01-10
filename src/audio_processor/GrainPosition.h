@@ -7,25 +7,24 @@
 /**
  * Represents the playback position of a grain in a buffer
  */
-struct GrainPosition
+template<typename T>
+struct Pair
 {
-    double leftPosition;
-    double rightPosition;
+    T l;
+    T r;
 
-    template<typename FloatType>
-    GrainPosition fmod(FloatType x) const noexcept
+    Pair fmod(T x) const noexcept
     {
-        return {std::fmod(leftPosition, x), std::fmod(rightPosition, x)};
+        return {std::fmod(l, x), std::fmod(r, x)};
     }
 
-    GrainPosition operator+(GrainPosition other)
+    Pair operator+(Pair other)
     {
-        return {leftPosition + other.leftPosition, rightPosition + other.rightPosition};
+        return {l + other.l, r + other.r};
     }
 
-
-    GrainPosition operator+(double x)
+    Pair operator+(T x)
     {
-        return {leftPosition + x, rightPosition + x};
+        return {l + x, r + x};
     }
 };

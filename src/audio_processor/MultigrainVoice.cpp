@@ -110,25 +110,30 @@ void MultigrainVoice::renderNextBlock(juce::AudioSampleBuffer& outputBuffer, int
                 samplesTillNextOnset += samplesBetweenOnsets;
                 updateGrainSpawnPosition(samplesBetweenOnsets);
             }
+            float outLeft = 0.f;
+            float outRight = 0.f;
             for(Grain* grain : grains)
             {
                 float grainSample = grain->getNextSample();
                 if (outR != nullptr)
                 {
-                    *outL += grainSample;
-                    *outR += grainSample;
+                    outLeft += grainSample;
+                    outRight += grainSample;
                 }
                 else
                 {
                     // is actually (left+right)/2
-                    *outL += (grainSample + grainSample) * 0.5f;
+                    outLeft += (grainSample + grainSample) * 0.5f;
                 }
             }
 
             auto envelopeValue = adsr.getNextSample();
+            outLeft *= envelopeValue;
+            outRight *= envelopeValue;
 
-            *outL *= envelopeValue;
-            *outR *= envelopeValue;
+            *outL += outLeft;
+            *outR += outRight;
+
             outL++;
             outR++;
 
