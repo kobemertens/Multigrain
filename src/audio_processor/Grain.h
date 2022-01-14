@@ -29,15 +29,15 @@ private:
 /**
  * Write samples from sourceData to buffer according to pitch ratio.
  */
-class GrainSource
+class GrainSource // aka AudioSource
 {
 public:
-    GrainSource(MultigrainSound& sourceData, GrainEnvelope& env, juce::ADSR& globalEnvelope);
-    void processNextBlock(juce::AudioSampleBuffer& bufferToProcess, int startSample, int numSamples); // write information about pitch here
+    GrainSource(MultigrainSound& sourceData, juce::ADSR& globalEnvelope);
+    // void processNextBlock(juce::AudioSampleBuffer& bufferToProcess, int startSample, int numSamples); // write information about pitch here
+    float getNextSample();
     void init(GrainPosition sourceSamplePosition, double pitchRatio);
 
 private:
-    GrainEnvelope& env;
     double pitchRatio;
     GrainPosition sourceSamplePosition;
     MultigrainSound& sourceData;
