@@ -190,7 +190,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
                                                            juce::NormalisableRange<float>(0.f, 1.f, .0001f, 1.f),
                                                            1.f));
 
-    // Determines the number of grains. 2 grains are offset by 180 deg etc..
+    // Determines the number of m_grains. 2 m_grains are offset by 180 deg etc..
     layout.add(std::make_unique<juce::AudioParameterInt>("Num Grains",
                                                          "Num Grains",
                                                          1,
@@ -216,13 +216,13 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
                                                          12,
                                                          0));
 
-    // Allows to set a scale in which the grains are played randomly
+    // Allows to set a scale in which the m_grains are played randomly
     // layout.add(std::make_unique<juce::AudioParameterChoice>("Grain Pitch Random",
     //                                                         "Pitch Scale",
     //                                                         juce::StringArray{},
     //                                                         0));
 
-    // Playback position of the grains.
+    // Playback position of the m_grains.
     layout.add(std::make_unique<juce::AudioParameterFloat>("Position",
                                                            "Position",
                                                            juce::NormalisableRange<float>(0.f, 1.f, .0001f, 1.f),
@@ -253,7 +253,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
                                                           "Reverb Toggle",
                                                           false));
 
-    // Randomizes the playback position of the grains. Calculated separately for each channel of the sample
+    // Randomizes the playback position of the m_grains. Calculated separately for each channel of the sample
     layout.add(std::make_unique<juce::AudioParameterFloat>("Position Random",
                                                            "Position Random",
                                                            juce::NormalisableRange<float>(0.f, 1.f, .0001f, .2f),

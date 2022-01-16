@@ -8,7 +8,7 @@
 #include <juce_audio_formats/juce_audio_formats.h>
 
 /**
- * Manages sourceData buffer and channel-note-mask
+ * Manages m_sourceData buffer and channel-note-mask
  */
 class MultigrainSound : public juce::SynthesiserSound
 {
@@ -38,6 +38,6 @@ private:
     juce::BigInteger midiNotes;
     int length = 0, midiRootNote = 0;
 
-    JUCE_LEAK_DETECTOR(MultigrainSound);
+    JUCE_LEAK_DETECTOR(MultigrainSound)
 
 };

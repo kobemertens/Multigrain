@@ -25,5 +25,5 @@ private:
 
     int numVoices = 1;
 
-    JUCE_LEAK_DETECTOR(SynthAudioSource);
+    JUCE_LEAK_DETECTOR(SynthAudioSource)
 };
