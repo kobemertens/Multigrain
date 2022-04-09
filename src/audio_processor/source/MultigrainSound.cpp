@@ -2,19 +2,21 @@
 // Created by kobe on 19/11/2021.
 //
 
-#include "MultigrainSound.h"
+#include "../MultigrainSound.h"
 
 
 // MultigrainSound
-MultigrainSound::MultigrainSound(const juce::String& soundName,
-                                 juce::AudioFormatReader& source,
-                                 const juce::BigInteger& notes,
-                                 int midiNoteForNormalPitch,
-                                 double maxSampleLengthSeconds)
-        : name(soundName),
-          sourceSampleRate(source.sampleRate),
-          midiNotes(notes),
-          midiRootNote(midiNoteForNormalPitch)
+MultigrainSound::MultigrainSound(
+    const juce::String& soundName,
+    juce::AudioFormatReader& source,
+    const juce::BigInteger& notes,
+    int midiNoteForNormalPitch,
+    double maxSampleLengthSeconds
+):
+    name(soundName),
+    sourceSampleRate(source.sampleRate),
+    midiNotes(notes),
+    midiRootNote(midiNoteForNormalPitch)
 {
     if (sourceSampleRate > 0 && source.lengthInSamples > 0)
     {
@@ -27,7 +29,7 @@ MultigrainSound::MultigrainSound(const juce::String& soundName,
     }
 }
 
-MultigrainSound::~MultigrainSound() {}
+MultigrainSound::~MultigrainSound() = default;
 
 bool MultigrainSound::appliesToNote(int /*midiNoteNumber*/)
 {

@@ -20,7 +20,7 @@ public:
         juce::String releaseParameter;
     };
 
-    AdsrComponent(AudioPluginAudioProcessor& processorRef, const Parameters parameters);
+    AdsrComponent(MultigrainAudioProcessor& processorRef, const Parameters parameters);
     ~AdsrComponent();
     void resized() override;
     void paint(juce::Graphics& g) override;
@@ -54,5 +54,5 @@ private:
     Parameters parameters;
     AdsrVisualComponent visualComponent;
 
-    AudioPluginAudioProcessor& processorRef;
+    MultigrainAudioProcessor& processorRef;
 };

@@ -10,7 +10,7 @@
 
 cmake_minimum_required(VERSION 3.15)
 
-set (CMAKE_CXX_STANDARD 17)
+set (CMAKE_CXX_STANDARD 20)
 
 # The top-level CMakeLists.txt file for a project must contain a literal, direct call to the
 # `project()` command. `project()` sets up some helpful variables that describe source/binary
@@ -72,18 +72,19 @@ juce_add_plugin(${PROJECT_NAME}
 
 target_sources(${PROJECT_NAME}
     PRIVATE
-        src/ui/PluginEditor.cpp
-        src/audio_processor/PluginProcessor.cpp
-        src/audio_processor/SynthAudioSource.cpp
-        src/audio_processor/Grain.cpp
-        src/audio_processor/MultigrainSound.cpp
-        src/audio_processor/MultigrainVoice.cpp
-        src/ui/AdsrComponent.cpp
-        src/ui/RotarySliderWithLabels.cpp
-        src/ui/LookAndFeel.cpp
-        src/ui/GrainTabComponent.cpp
-        src/ui/FxTabComponent.cpp
-        src/ui/RandomizableSlider.cpp
+        src/ui/source/PluginEditor.cpp
+        src/audio_processor/source/PluginProcessor.cpp
+        src/audio_processor/source/SynthAudioSource.cpp
+        src/audio_processor/source/Grain.cpp
+        src/audio_processor/source/MultigrainSound.cpp
+        src/audio_processor/source/MultigrainVoice.cpp
+
+        src/ui/source/AdsrComponent.cpp
+        src/ui/source/RotarySliderWithLabels.cpp
+        src/ui/source/LookAndFeel.cpp
+        src/ui/source/GrainTabComponent.cpp
+        src/ui/source/FxTabComponent.cpp
+        src/ui/source/RandomizableSlider.cpp
     )
 
 # `target_compile_definitions` adds some preprocessor definitions to our target. In a Projucer

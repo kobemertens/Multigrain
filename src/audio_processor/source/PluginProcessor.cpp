@@ -1,8 +1,8 @@
-#include "PluginProcessor.h"
-#include "../ui/PluginEditor.h"
+#include "../PluginProcessor.h"
+#include "../../ui/PluginEditor.h"
 
 //==============================================================================
-AudioPluginAudioProcessor::AudioPluginAudioProcessor()
+MultigrainAudioProcessor::MultigrainAudioProcessor()
      : AudioProcessor (BusesProperties()
                      #if ! JucePlugin_IsMidiEffect
                       #if ! JucePlugin_IsSynth
@@ -15,17 +15,17 @@ AudioPluginAudioProcessor::AudioPluginAudioProcessor()
 {
 }
 
-AudioPluginAudioProcessor::~AudioPluginAudioProcessor()
+MultigrainAudioProcessor::~MultigrainAudioProcessor()
 {
 }
 
 //==============================================================================
-const juce::String AudioPluginAudioProcessor::getName() const
+const juce::String MultigrainAudioProcessor::getName() const
 {
     return JucePlugin_Name;
 }
 
-bool AudioPluginAudioProcessor::acceptsMidi() const
+bool MultigrainAudioProcessor::acceptsMidi() const
 {
    #if JucePlugin_WantsMidiInput
     return true;
@@ -34,7 +34,7 @@ bool AudioPluginAudioProcessor::acceptsMidi() const
    #endif
 }
 
-bool AudioPluginAudioProcessor::producesMidi() const
+bool MultigrainAudioProcessor::producesMidi() const
 {
    #if JucePlugin_ProducesMidiOutput
     return true;
@@ -43,7 +43,7 @@ bool AudioPluginAudioProcessor::producesMidi() const
    #endif
 }
 
-bool AudioPluginAudioProcessor::isMidiEffect() const
+bool MultigrainAudioProcessor::isMidiEffect() const
 {
    #if JucePlugin_IsMidiEffect
     return true;
@@ -52,40 +52,40 @@ bool AudioPluginAudioProcessor::isMidiEffect() const
    #endif
 }
 
-double AudioPluginAudioProcessor::getTailLengthSeconds() const
+double MultigrainAudioProcessor::getTailLengthSeconds() const
 {
     return 0.0;
 }
 
-int AudioPluginAudioProcessor::getNumPrograms()
+int MultigrainAudioProcessor::getNumPrograms()
 {
     return 1;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
                 // so this should be at least 1, even if you're not really implementing programs.
 }
 
-int AudioPluginAudioProcessor::getCurrentProgram()
+int MultigrainAudioProcessor::getCurrentProgram()
 {
     return 0;
 }
 
-void AudioPluginAudioProcessor::setCurrentProgram (int index)
+void MultigrainAudioProcessor::setCurrentProgram (int index)
 {
     juce::ignoreUnused (index);
 }
 
-const juce::String AudioPluginAudioProcessor::getProgramName (int index)
+const juce::String MultigrainAudioProcessor::getProgramName (int index)
 {
     juce::ignoreUnused (index);
     return {};
 }
 
-void AudioPluginAudioProcessor::changeProgramName (int index, const juce::String& newName)
+void MultigrainAudioProcessor::changeProgramName (int index, const juce::String& newName)
 {
     juce::ignoreUnused (index, newName);
 }
 
 //==============================================================================
-void AudioPluginAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
+void MultigrainAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
@@ -95,7 +95,7 @@ void AudioPluginAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     reverb.setSampleRate(sampleRate);
 }
 
-void AudioPluginAudioProcessor::releaseResources()
+void MultigrainAudioProcessor::releaseResources()
 {
     // When playback stops, you can use this as an opportunity to free up any
     // spare memory, etc.
@@ -103,7 +103,7 @@ void AudioPluginAudioProcessor::releaseResources()
     synthAudioSource.releaseResources();
 }
 
-bool AudioPluginAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
+bool MultigrainAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
 {
   #if JucePlugin_IsMidiEffect
     juce::ignoreUnused (layouts);
@@ -127,12 +127,13 @@ bool AudioPluginAudioProcessor::isBusesLayoutSupported (const BusesLayout& layou
   #endif
 }
 
-void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
-                                              juce::MidiBuffer& midiMessages)
+void MultigrainAudioProcessor::processBlock(
+    juce::AudioBuffer<float>& buffer,
+    juce::MidiBuffer& midiMessages
+)
 {
-    for (const auto metadata : midiMessages)
-        keyboardState.processNextMidiEvent(metadata.getMessage());
-    // keyboardState.processNextMidiBuffer(midiMessages, 0, buffer.getNumSamples(), false); // does not work because the messages will not be added in the synth
+    for (auto theMessage : midiMessages)
+        keyboardState.processNextMidiEvent(theMessage.getMessage());
 
     juce::ScopedNoDenormals noDenormals;
     auto totalNumInputChannels  = getTotalNumInputChannels();
@@ -154,19 +155,24 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
 }
 
 //==============================================================================
-bool AudioPluginAudioProcessor::hasEditor() const
+
+bool
+MultigrainAudioProcessor::hasEditor() const
 {
     return true; // (change this to false if you choose to not supply an editor)
 }
 
-juce::AudioProcessorEditor* AudioPluginAudioProcessor::createEditor()
+juce::AudioProcessorEditor*
+MultigrainAudioProcessor::createEditor()
 {
     return new AudioPluginAudioProcessorEditor (*this);
     // return new juce::GenericAudioProcessorEditor(*this);
 }
 
 //==============================================================================
-void AudioPluginAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
+
+void
+MultigrainAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
     // You should use this method to store your parameters in the memory block.
     // You could do that either as raw data, or use the XML or ValueTree classes
@@ -174,43 +180,53 @@ void AudioPluginAudioProcessor::getStateInformation (juce::MemoryBlock& destData
     juce::ignoreUnused (destData);
 }
 
-void AudioPluginAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
+void
+MultigrainAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
     juce::ignoreUnused (data, sizeInBytes);
 }
 
-juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::createParameterLayout()
+juce::AudioProcessorValueTreeState::ParameterLayout
+MultigrainAudioProcessor::createParameterLayout()
 {
-    juce::AudioProcessorValueTreeState::ParameterLayout layout;
+    auto theLayout = juce::AudioProcessorValueTreeState::ParameterLayout();
 
-    layout.add(std::make_unique<juce::AudioParameterFloat>("Master Gain",
-                                                           "Master Gain",
-                                                           juce::NormalisableRange<float>(0.f, 1.f, .0001f, 1.f),
-                                                           1.f));
+    theLayout.add(
+        std::make_unique<juce::AudioParameterFloat>(
+            "Master Gain",
+            "Master Gain",
+            juce::NormalisableRange<float>(0.f, 1.f, .0001f, 1.f),
+            1.f
+        )
+    );
 
     // Determines the number of m_grains. 2 m_grains are offset by 180 deg etc..
-    layout.add(std::make_unique<juce::AudioParameterInt>("Num Grains",
-                                                         "Num Grains",
-                                                         1,
-                                                         8,
-                                                         1));
+    theLayout.add(
+        std::make_unique<juce::AudioParameterInt>(
+            "Num Grains",
+            "Num Grains",
+            1,
+            8,
+            1
+        )
+    );
 
     // Increases the grain period by a factor ranging from 1 to 1000
-    layout.add(std::make_unique<juce::AudioParameterFloat>("Grain Duration",
+    theLayout.add(std::make_unique<juce::AudioParameterFloat>("Grain Duration",
                                                            "Duration",
                                                            juce::NormalisableRange<float>(1.f, 1000.f, .0001f, .2f),
                                                            1.f));
 
     // Grain duration randomness. A setting of 100 % varies between half and twice the grain period.
-    layout.add(std::make_unique<juce::AudioParameterFloat>("Grain Duration Random",
+    theLayout.add(std::make_unique<juce::AudioParameterFloat>("Grain Duration Random",
                                                            "Duration Random",
                                                            juce::NormalisableRange<float>(0.f, 1.f, .0001f, .1f),
                                                            0.f));
 
     // Set between -12 and +12 semitones. Grains are played randomly at their original pitch or the set value.
-    layout.add(std::make_unique<juce::AudioParameterInt>("Grain Pitch Interval",
+    theLayout.add(std::make_unique<juce::AudioParameterInt>("Grain Pitch Interval",
                                                          "Pitch Interval",
                                                          -12,
                                                          12,
@@ -223,43 +239,43 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
     //                                                         0));
 
     // Playback position of the m_grains.
-    layout.add(std::make_unique<juce::AudioParameterFloat>("Position",
+    theLayout.add(std::make_unique<juce::AudioParameterFloat>("Position",
                                                            "Position",
                                                            juce::NormalisableRange<float>(0.f, 1.f, .0001f, 1.f),
                                                            0.f));
 
-    layout.add(std::make_unique<juce::AudioParameterFloat>("Synth Attack",
+    theLayout.add(std::make_unique<juce::AudioParameterFloat>("Synth Attack",
                                                          "Attack",
                                                          juce::NormalisableRange<float>(0.f, 30000.f, 1.f, .2f),
                                                          0.f));
 
-    layout.add(std::make_unique<juce::AudioParameterFloat>("Synth Decay",
+    theLayout.add(std::make_unique<juce::AudioParameterFloat>("Synth Decay",
                                                          "Decay",
                                                          juce::NormalisableRange<float>(0.f, 30000.f, 1.f, .2f),
                                                          1000.f));
 
-    layout.add(std::make_unique<juce::AudioParameterInt>("Synth Sustain",
+    theLayout.add(std::make_unique<juce::AudioParameterInt>("Synth Sustain",
                                                          "Sustain",
                                                          0,
                                                          100,
                                                          100));
 
-    layout.add(std::make_unique<juce::AudioParameterFloat>("Synth Release",
+    theLayout.add(std::make_unique<juce::AudioParameterFloat>("Synth Release",
                                                          "Release",
                                                          juce::NormalisableRange<float>(0.f, 30000.f, 1.f, .2f),
                                                          1000.f));
 
-    layout.add(std::make_unique<juce::AudioParameterBool>("Reverb Toggle",
+    theLayout.add(std::make_unique<juce::AudioParameterBool>("Reverb Toggle",
                                                           "Reverb Toggle",
                                                           false));
 
     // Randomizes the playback position of the m_grains. Calculated separately for each channel of the sample
-    layout.add(std::make_unique<juce::AudioParameterFloat>("Position Random",
+    theLayout.add(std::make_unique<juce::AudioParameterFloat>("Position Random",
                                                            "Position Random",
                                                            juce::NormalisableRange<float>(0.f, 1.f, .0001f, .2f),
                                                            0.f));
 
-    layout.add(std::make_unique<juce::AudioParameterFloat>("Grain Speed",
+    theLayout.add(std::make_unique<juce::AudioParameterFloat>("Grain Speed",
                                                            "Speed",
                                                            juce::NormalisableRange<float>(-2.f, 2.f, .0001f, 1.f),
                                                            0.f));
@@ -268,15 +284,16 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
     grainShapeChoices.add("Triangle");
     grainShapeChoices.add("Hanning");
     // Sets the shape of the grain envelope
-    layout.add(std::make_unique<juce::AudioParameterChoice>("Grain Envelope Shape",
+    theLayout.add(std::make_unique<juce::AudioParameterChoice>("Grain Envelope Shape",
                                                             "Shape",
                                                             grainShapeChoices,
                                                             0));
 
-    return layout;
+    return theLayout;
 }
 
-SynthAudioSource& AudioPluginAudioProcessor::getSynthAudioSource()
+SynthAudioSource&
+MultigrainAudioProcessor::getSynthAudioSource()
 {
     return synthAudioSource;
 }
@@ -285,5 +302,5 @@ SynthAudioSource& AudioPluginAudioProcessor::getSynthAudioSource()
 // This creates new instances of the plugin..
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
-    return new AudioPluginAudioProcessor();
+    return new MultigrainAudioProcessor();
 }

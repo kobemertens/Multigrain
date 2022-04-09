@@ -16,7 +16,7 @@ class MainAudioThumbnailComponent : public juce::Component,
                                     public juce::FileDragAndDropTarget
 {
 public:
-    MainAudioThumbnailComponent(AudioPluginAudioProcessor& processorRef, int sourceSamplesPerThumbnailSample, juce::AudioFormatManager& formatManager, juce::AudioThumbnailCache& cacheToUse);
+    MainAudioThumbnailComponent(MultigrainAudioProcessor& processorRef, int sourceSamplesPerThumbnailSample, juce::AudioFormatManager& formatManager, juce::AudioThumbnailCache& cacheToUse);
     ~MainAudioThumbnailComponent();
     void paint(juce::Graphics& g) override;
     void parameterChanged (const juce::String &parameterID, float newValue) override;
@@ -46,7 +46,7 @@ private:
     juce::AudioThumbnail previewAudioThumbnail;
     juce::AudioFormatManager& formatManager;
     LookAndFeel lnf;
-    AudioPluginAudioProcessor& processorRef;
+    MultigrainAudioProcessor& processorRef;
 };
 
 //==============================================================================
@@ -54,7 +54,7 @@ class AudioPluginAudioProcessorEditor  : public juce::AudioProcessorEditor
 
 {
 public:
-    explicit AudioPluginAudioProcessorEditor (AudioPluginAudioProcessor&);
+    explicit AudioPluginAudioProcessorEditor (MultigrainAudioProcessor&);
     ~AudioPluginAudioProcessorEditor() override;
 
     //==============================================================================
@@ -64,7 +64,7 @@ public:
 private:
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
-    AudioPluginAudioProcessor& processorRef;
+    MultigrainAudioProcessor& processorRef;
 
     // --------------------------------------------------------------
     // Components (dont forget to add to getComps!)

@@ -6,12 +6,12 @@
 #include "SynthAudioSource.h"
 
 //==============================================================================
-class AudioPluginAudioProcessor  : public juce::AudioProcessor
+class MultigrainAudioProcessor  : public juce::AudioProcessor
 {
 public:
     //==============================================================================
-    AudioPluginAudioProcessor();
-    ~AudioPluginAudioProcessor() override;
+    MultigrainAudioProcessor();
+    ~MultigrainAudioProcessor() override;
 
     //==============================================================================
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
@@ -56,5 +56,5 @@ private:
     SynthAudioSource synthAudioSource;
     juce::Reverb reverb;
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MultigrainAudioProcessor)
 };

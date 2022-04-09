@@ -1,4 +1,4 @@
-#include "RandomizableSlider.h"
+#include "../RandomizableSlider.h"
 
 RandomizableSlider::RandomizableSlider(APVTS& apvts, juce::String mainParamId, juce::String randomParamId)
     : apvts(apvts),

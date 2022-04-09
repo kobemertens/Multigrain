@@ -1,6 +1,6 @@
-#include "AdsrComponent.h"
+#include "../AdsrComponent.h"
 
-AdsrComponent::AdsrComponent(AudioPluginAudioProcessor& processorRef, Parameters parameters)
+AdsrComponent::AdsrComponent(MultigrainAudioProcessor& processorRef, Parameters parameters)
     : processorRef(processorRef),
       attackSlider(*processorRef.apvts.getParameter(parameters.attackParameter), "ms"),
       decaySlider(*processorRef.apvts.getParameter(parameters.decayParameter), "ms"),

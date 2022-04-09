@@ -1,6 +1,6 @@
-#include "LookAndFeel.h"
-#include "RotarySliderWithLabels.h"
-#include <BinaryData.h>
+#include "../LookAndFeel.h"
+#include "../RotarySliderWithLabels.h"
+#include "BinaryData.h"
 
 void LookAndFeel::drawRotarySlider (juce::Graphics& g,
                                     int x, int y, int width, int height,

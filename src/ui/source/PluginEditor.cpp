@@ -1,7 +1,7 @@
-#include "../audio_processor/PluginProcessor.h"
-#include "PluginEditor.h"
+#include "../../audio_processor/PluginProcessor.h"
+#include "../PluginEditor.h"
 
-MainAudioThumbnailComponent::MainAudioThumbnailComponent(AudioPluginAudioProcessor& processorRef, int sourceSamplesPerThumbnailSample, juce::AudioFormatManager& formatManager, juce::AudioThumbnailCache& cacheToUse)
+MainAudioThumbnailComponent::MainAudioThumbnailComponent(MultigrainAudioProcessor& processorRef, int sourceSamplesPerThumbnailSample, juce::AudioFormatManager& formatManager, juce::AudioThumbnailCache& cacheToUse)
     : audioThumbnail(sourceSamplesPerThumbnailSample, formatManager, cacheToUse),
       previewAudioThumbnailCache(1),
       previewAudioThumbnail(sourceSamplesPerThumbnailSample, formatManager, previewAudioThumbnailCache),
@@ -239,7 +239,7 @@ void MainAudioThumbnailComponent::setAudioSource(juce::File& file)
 }
 
 //==============================================================================
-AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAudioProcessor& p)
+AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (MultigrainAudioProcessor& p)
     : AudioProcessorEditor (&p), processorRef (p),
     keyboardComponent(processorRef.keyboardState, juce::MidiKeyboardComponent::horizontalKeyboard),
     audioThumbnailCache(5),

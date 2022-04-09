@@ -2,7 +2,7 @@
 // Created by kobe on 19/11/2021.
 //
 
-#include "MultigrainVoice.h"
+#include "../MultigrainVoice.h"
 
 // MultigrainVoice
 MultigrainVoice::MultigrainVoice(juce::AudioProcessorValueTreeState& apvts, MultigrainSound& sound)
@@ -92,13 +92,13 @@ void MultigrainVoice::renderNextBlock(juce::AudioSampleBuffer& outputBuffer, int
                 updateGrainSpawnPosition(samplesBetweenOnsets);
             }
 
-            float voiceOutLeft = 0.f;
-            float voiceOutRight = 0.f;
+            auto voiceOutLeft = 0.f;
+            auto voiceOutRight = 0.f;
 
             for (Grain* grain : m_grains)
             {
-                float grainLeft;
-                float grainRight;
+                auto grainLeft = 0.f;
+                auto grainRight = 0.f;
 
                 grain->getNextSample(&grainLeft, &grainRight);
 
@@ -110,11 +110,8 @@ void MultigrainVoice::renderNextBlock(juce::AudioSampleBuffer& outputBuffer, int
             voiceOutLeft *= envelopeValue;
             voiceOutRight *= envelopeValue;
 
-            *outL += voiceOutLeft;
-            *outR += voiceOutRight;
-
-            outL++;
-            outR++;
+            *outL++ += voiceOutLeft;
+            *outR++ += voiceOutRight;
 
             m_samplesTillNextOnset--;
 

@@ -9,21 +9,23 @@
 class SynthAudioSource : public juce::AudioSource
 {
 public:
-    SynthAudioSource (juce::MidiKeyboardState& keyboardState, juce::AudioProcessorValueTreeState& apvts);
-    ~SynthAudioSource();
+    SynthAudioSource (
+        juce::MidiKeyboardState& inMidiKeyboardState,
+        juce::AudioProcessorValueTreeState& inApvts
+    );
+    ~SynthAudioSource() override;
 
     void prepareToPlay(int samplesPerBlockExpected, double sampleRate) override;
     void releaseResources() override;
     void getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill) override;
-    juce::Synthesiser& getSynth();
 
     void init(MultigrainSound* sound);
 private:
-    juce::MidiKeyboardState& keyboardState;
-    juce::AudioProcessorValueTreeState& apvts;
+    juce::MidiKeyboardState& mKeyboardState;
+    juce::AudioProcessorValueTreeState& mApvts;
     juce::Synthesiser synth;
 
-    int numVoices = 1;
+    static int const kNumVoices = 16;
 
     JUCE_LEAK_DETECTOR(SynthAudioSource)
 };

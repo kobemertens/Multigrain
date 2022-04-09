@@ -2,7 +2,7 @@
 // Created by kobe on 19/11/2021.
 //
 
-#include "Grain.h"
+#include "../Grain.h"
 
 // GrainEnvelope
 void GrainEnvelope::init(unsigned int durationSamples, float grainAmplitude)
@@ -72,8 +72,8 @@ void GrainSource::init(GrainPosition initPosition, double pitchRatio)
 void GrainSource::getNextSample(float* outL, float* outR)
 {
     juce::AudioSampleBuffer* data = m_sourceData.getAudioData();
-    const float* const inL = data->getReadPointer(0);
-    const float* const inR = data->getNumChannels() > 1 ? data->getReadPointer(1) : nullptr;
+    const float* const inL = data->getReadPointer (0);
+    const float* const inR = data->getNumChannels() > 1 ? data->getReadPointer (1) : nullptr;
 
     auto posLeft = (int) m_sourceSamplePosition.leftPosition;
     auto alphaLeft = (float) (m_sourceSamplePosition.leftPosition - posLeft);
@@ -86,27 +86,28 @@ void GrainSource::getNextSample(float* outL, float* outR)
     // just using a very simple linear interpolation here..
     float l = (inL[posLeft] * invAlphaLeft + inL[posLeft + 1] * alphaLeft);
     float r = (inR != nullptr) ? (inR[posRight] * invAlphaRight + inR[posRight + 1] * alphaRight)
-            : (inL[posRight] * invAlphaRight + inL[posRight + 1] * alphaRight); // use the left channel if mono sample was provided
+                               : (inL[posRight] * invAlphaRight + inL[posRight + 1] * alphaRight); // use the left channel if mono sample was provided
 
     if (outR != nullptr)
     {
-        *outL++ += l;
-        *outR++ += r;
+        *outL += l;
+        *outR += r;
     }
     else
     {
-        *outL++ += (l + r) * 0.5f;
+        *outL += (l + r) * 0.5f;
     }
 
-    m_sourceSamplePosition.leftPosition += m_pitchRatio;
-    m_sourceSamplePosition.rightPosition += m_pitchRatio;
+     m_sourceSamplePosition.leftPosition += m_pitchRatio;
+     m_sourceSamplePosition.rightPosition += m_pitchRatio;
 
-    if (m_sourceSamplePosition.rightPosition >= m_sourceData.length)
-        m_sourceSamplePosition.rightPosition -= m_sourceData.length;
+     if (m_sourceSamplePosition.rightPosition >= m_sourceData.length)
+         m_sourceSamplePosition.rightPosition -= m_sourceData.length;
 
-    if (m_sourceSamplePosition.leftPosition >= m_sourceData.length)
-        m_sourceSamplePosition.leftPosition -= m_sourceData.length;
-}
+     if (m_sourceSamplePosition.leftPosition >= m_sourceData.length)
+         m_sourceSamplePosition.leftPosition -= m_sourceData.length;
+    }
+
 
 // void GrainSource::processNextBlock(juce::AudioSampleBuffer& bufferToProcess, int startSample, int numSamples)
 // {
