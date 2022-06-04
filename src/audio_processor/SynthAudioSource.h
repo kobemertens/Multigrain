@@ -23,7 +23,7 @@ public:
 private:
     juce::MidiKeyboardState& mKeyboardState;
     juce::AudioProcessorValueTreeState& mApvts;
-    juce::Synthesiser synth;
+    juce::Synthesiser mSynth;
 
     static int const kNumVoices = 16;
 

@@ -242,6 +242,8 @@ void MainAudioThumbnailComponent::setAudioSource(juce::File& file)
 AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (MultigrainAudioProcessor& p)
     : AudioProcessorEditor (&p), processorRef (p),
     keyboardComponent(processorRef.keyboardState, juce::MidiKeyboardComponent::horizontalKeyboard),
+    mRootNoteSlider(*processorRef.apvts.getParameter("Root Note"), "Root Note"),
+    mRootNoteSliderAttachment(processorRef.apvts, "Root Note", mRootNoteSlider),
     audioThumbnailCache(5),
     audioThumbnailComponent(processorRef, 512, formatManager, audioThumbnailCache),
     mainAdsrComponent(processorRef, {"Synth Attack", "Synth Decay", "Synth Sustain", "Synth Release"}),
@@ -294,13 +296,16 @@ void AudioPluginAudioProcessorEditor::resized()
 
     waveformArea = bounds.removeFromTop(bounds.getHeight() * 0.25);
     auto generalSettings = bounds.removeFromTop(bounds.getHeight()*0.2);
+    auto gainSliderArea = generalSettings.removeFromLeft(generalSettings.getWidth() * .5);
+    auto rootNoteSliderArea = generalSettings;
     auto tabbedComponentArea = bounds.removeFromTop(bounds.getHeight() * 0.75);
     auto keyboardArea = bounds;
     keyboardComponent.setBounds(keyboardArea);
     audioThumbnailComponent.setBounds(waveformArea);
 
     mainTabbedComponent.setBounds(tabbedComponentArea);
-    masterGainSlider.setBounds(generalSettings);
+    masterGainSlider.setBounds(gainSliderArea);
+    mRootNoteSlider.setBounds(rootNoteSliderArea);
 }
 
 std::vector<juce::Component*> AudioPluginAudioProcessorEditor::getComps()
@@ -308,6 +313,7 @@ std::vector<juce::Component*> AudioPluginAudioProcessorEditor::getComps()
     return
     {
         &keyboardComponent,
+        &mRootNoteSlider,
         &audioThumbnailComponent,
         &mainTabbedComponent,
         &masterGainSlider

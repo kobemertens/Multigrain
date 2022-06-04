@@ -17,7 +17,7 @@ struct RotarySliderWithLabels : juce::Slider
         setLookAndFeel(&lnf);
     }
 
-    ~RotarySliderWithLabels()
+    ~RotarySliderWithLabels() override
     {
         setLookAndFeel(nullptr);
     }

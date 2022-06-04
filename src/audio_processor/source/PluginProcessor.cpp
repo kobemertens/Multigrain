@@ -202,7 +202,7 @@ MultigrainAudioProcessor::createParameterLayout()
         )
     );
 
-    // Determines the number of m_grains. 2 m_grains are offset by 180 deg etc..
+    // Determines the number of mGrains. 2 mGrains are offset by 180 deg etc..
     theLayout.add(
         std::make_unique<juce::AudioParameterInt>(
             "Num Grains",
@@ -214,10 +214,14 @@ MultigrainAudioProcessor::createParameterLayout()
     );
 
     // Increases the grain period by a factor ranging from 1 to 1000
-    theLayout.add(std::make_unique<juce::AudioParameterFloat>("Grain Duration",
-                                                           "Duration",
-                                                           juce::NormalisableRange<float>(1.f, 1000.f, .0001f, .2f),
-                                                           1.f));
+    theLayout.add(
+        std::make_unique<juce::AudioParameterFloat>(
+            "Grain Duration",
+            "Duration",
+            juce::NormalisableRange<float>(1.f, 1000.f, .0001f, .2f),
+            1.f
+        )
+    );
 
     // Grain duration randomness. A setting of 100 % varies between half and twice the grain period.
     theLayout.add(std::make_unique<juce::AudioParameterFloat>("Grain Duration Random",
@@ -232,13 +236,13 @@ MultigrainAudioProcessor::createParameterLayout()
                                                          12,
                                                          0));
 
-    // Allows to set a scale in which the m_grains are played randomly
+    // Allows to set a scale in which the mGrains are played randomly
     // layout.add(std::make_unique<juce::AudioParameterChoice>("Grain Pitch Random",
     //                                                         "Pitch Scale",
     //                                                         juce::StringArray{},
     //                                                         0));
 
-    // Playback position of the m_grains.
+    // Playback position of the mGrains.
     theLayout.add(std::make_unique<juce::AudioParameterFloat>("Position",
                                                            "Position",
                                                            juce::NormalisableRange<float>(0.f, 1.f, .0001f, 1.f),
@@ -269,7 +273,7 @@ MultigrainAudioProcessor::createParameterLayout()
                                                           "Reverb Toggle",
                                                           false));
 
-    // Randomizes the playback position of the m_grains. Calculated separately for each channel of the sample
+    // Randomizes the playback position of the mGrains. Calculated separately for each channel of the sample
     theLayout.add(std::make_unique<juce::AudioParameterFloat>("Position Random",
                                                            "Position Random",
                                                            juce::NormalisableRange<float>(0.f, 1.f, .0001f, .2f),
@@ -284,10 +288,24 @@ MultigrainAudioProcessor::createParameterLayout()
     grainShapeChoices.add("Triangle");
     grainShapeChoices.add("Hanning");
     // Sets the shape of the grain envelope
-    theLayout.add(std::make_unique<juce::AudioParameterChoice>("Grain Envelope Shape",
-                                                            "Shape",
-                                                            grainShapeChoices,
-                                                            0));
+    theLayout.add(
+        std::make_unique<juce::AudioParameterChoice>(
+            "Grain Envelope Shape",
+            "Shape",
+            grainShapeChoices,
+            0
+        )
+    );
+
+    theLayout.add(
+        std::make_unique <juce::AudioParameterInt>(
+            "Root Note",
+            "Root Note",
+            0,     // Min: C1
+            127,   // Max: G9
+            60     // Default: C4
+        )
+    );
 
     return theLayout;
 }

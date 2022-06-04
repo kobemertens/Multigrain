@@ -15,7 +15,7 @@ SynthAudioSource::~SynthAudioSource() = default;
 
 void SynthAudioSource::prepareToPlay(int /*samplesPerBlockExpected*/, double sampleRate)
 {
-    synth.setCurrentPlaybackSampleRate(sampleRate);
+    mSynth.setCurrentPlaybackSampleRate(sampleRate);
 }
 
 void SynthAudioSource::releaseResources() {}
@@ -27,16 +27,16 @@ void SynthAudioSource::getNextAudioBlock(
     auto theMidiBuffer = juce::MidiBuffer();
     mKeyboardState.processNextMidiBuffer(theMidiBuffer, 0, bufferToFill.numSamples, true);
 
-    synth.renderNextBlock(*bufferToFill.buffer, theMidiBuffer, bufferToFill.startSample, bufferToFill.numSamples);
+    mSynth.renderNextBlock(*bufferToFill.buffer, theMidiBuffer, bufferToFill.startSample, bufferToFill.numSamples);
 }
 
 void SynthAudioSource::init(MultigrainSound* sound)
 {
     // clear all previous sounds and voices
-    synth.clearSounds();
-    synth.clearVoices();
+    mSynth.clearSounds();
+    mSynth.clearVoices();
 
-    synth.addSound(sound);
+    mSynth.addSound(sound);
     for (int i = 0; i < kNumVoices; i++)
-        synth.addVoice(new MultigrainVoice(mApvts, *sound));
+        mSynth.addVoice(new MultigrainVoice(mApvts, *sound));
 }

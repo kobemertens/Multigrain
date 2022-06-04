@@ -5,6 +5,7 @@
 
 #include "../audio_processor/PluginProcessor.h"
 #include "RotarySliderWithLabels.h"
+#include "NoteSlider.h"
 #include "AdsrComponent.h"
 #include "GrainTabComponent.h"
 #include "FxTabComponent.h"
@@ -71,8 +72,8 @@ private:
     // --------------------------------------------------------------
 
     juce::MidiKeyboardComponent keyboardComponent;
+    NoteSlider mRootNoteSlider;
     std::vector<juce::Component*> getComps();
-
 
     // ---------------------------------------------------------------
     juce::Rectangle<int> waveformArea;
@@ -81,6 +82,8 @@ private:
     using APVTS = juce::AudioProcessorValueTreeState;
     using SliderAttachment = APVTS::SliderAttachment;
     using ButtonAttachment = APVTS::ButtonAttachment;
+
+    SliderAttachment mRootNoteSliderAttachment;
 
     juce::AudioFormatManager formatManager;
 

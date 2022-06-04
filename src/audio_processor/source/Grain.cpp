@@ -7,12 +7,12 @@
 // GrainEnvelope
 void GrainEnvelope::init(unsigned int durationSamples, float grainAmplitude)
 {
-    m_amplitude = 0;
-    m_currentSample = 0;
-    this->m_grainAmplitude = grainAmplitude;
-    m_attackSamples = durationSamples / 2;
-    m_releaseSamples = durationSamples - m_attackSamples - 1;
-    m_amplitudeIncrement = grainAmplitude / (float) m_attackSamples;
+    mAmplitude = 0;
+    mCurrentSample = 0;
+    mGrainAmplitude = grainAmplitude;
+    mAttackSamples = durationSamples / 2;
+    mReleaseSamples = durationSamples - mAttackSamples - 1;
+    mAmplitudeIncrement = grainAmplitude / (float) mAttackSamples;
 }
 
 //void GrainEnvelope::processNextBlock(juce::AudioSampleBuffer &bufferToProcess, int startSample, int numSamples)
@@ -22,7 +22,7 @@ void GrainEnvelope::init(unsigned int durationSamples, float grainAmplitude)
 //
 //    while (--numSamples >= 0)
 //    {
-//        *outL++ *= m_amplitude;
+//        *outL++ *= mAmplitude;
 //        if (outR != nullptr)
 //        {
 //            *outR++ *= getNextSample();
@@ -32,55 +32,55 @@ void GrainEnvelope::init(unsigned int durationSamples, float grainAmplitude)
 
 float GrainEnvelope::getNextSample()
 {
-    auto returnValue = m_amplitude;
+    auto returnValue = mAmplitude;
 
-    if (m_currentSample == m_attackSamples)
-        m_amplitudeIncrement = -(m_grainAmplitude / (float) m_releaseSamples);
-    m_amplitude += m_amplitudeIncrement;
-    m_currentSample++;
+    if (mCurrentSample == mAttackSamples)
+        mAmplitudeIncrement = -(mGrainAmplitude / (float) mReleaseSamples);
+    mAmplitude += mAmplitudeIncrement;
+    mCurrentSample++;
 
     return returnValue;
 }
 
 // GrainSource
 GrainSource::GrainSource(const MultigrainSound &sourceData)
-        : m_pitchRatio{1.},
-          m_sourceSamplePosition{0., 0.},
-          m_sourceData{sourceData}
+        : mPitchRatio{1.},
+          mSourceSamplePosition{0., 0.},
+          mSourceData{sourceData}
 {
 }
 
 void GrainSource::init(GrainPosition initPosition, double pitchRatio)
 {
-    this->m_pitchRatio = pitchRatio;
-    if (initPosition.leftPosition >= m_sourceData.length)
-        initPosition.leftPosition -= m_sourceData.length;
+    this->mPitchRatio = pitchRatio;
+    if (initPosition.leftPosition >= mSourceData.length)
+        initPosition.leftPosition -= mSourceData.length;
 
-    if (initPosition.rightPosition >= m_sourceData.length)
-        initPosition.rightPosition -= m_sourceData.length;
+    if (initPosition.rightPosition >= mSourceData.length)
+        initPosition.rightPosition -= mSourceData.length;
 
 
     if (initPosition.leftPosition < 0.)
-        initPosition.leftPosition = m_sourceData.length + initPosition.leftPosition;
+        initPosition.leftPosition = mSourceData.length + initPosition.leftPosition;
 
     if (initPosition.rightPosition < 0.)
-        initPosition.rightPosition = m_sourceData.length + initPosition.rightPosition;
+        initPosition.rightPosition = mSourceData.length + initPosition.rightPosition;
 
-    m_sourceSamplePosition = initPosition;
+    mSourceSamplePosition = initPosition;
 }
 
 void GrainSource::getNextSample(float* outL, float* outR)
 {
-    juce::AudioSampleBuffer* data = m_sourceData.getAudioData();
+    juce::AudioSampleBuffer* data = mSourceData.getAudioData();
     const float* const inL = data->getReadPointer (0);
     const float* const inR = data->getNumChannels() > 1 ? data->getReadPointer (1) : nullptr;
 
-    auto posLeft = (int) m_sourceSamplePosition.leftPosition;
-    auto alphaLeft = (float) (m_sourceSamplePosition.leftPosition - posLeft);
+    auto posLeft = (int) mSourceSamplePosition.leftPosition;
+    auto alphaLeft = (float) (mSourceSamplePosition.leftPosition - posLeft);
     auto invAlphaLeft = 1.f - alphaLeft;
 
-    auto posRight = (int) m_sourceSamplePosition.rightPosition;
-    auto alphaRight = (float) (m_sourceSamplePosition.rightPosition - posRight);
+    auto posRight = (int) mSourceSamplePosition.rightPosition;
+    auto alphaRight = (float) (mSourceSamplePosition.rightPosition - posRight);
     auto invAlphaRight = 1.f - alphaRight;
 
     // just using a very simple linear interpolation here..
@@ -98,20 +98,20 @@ void GrainSource::getNextSample(float* outL, float* outR)
         *outL += (l + r) * 0.5f;
     }
 
-     m_sourceSamplePosition.leftPosition += m_pitchRatio;
-     m_sourceSamplePosition.rightPosition += m_pitchRatio;
+    mSourceSamplePosition.leftPosition += mPitchRatio;
+    mSourceSamplePosition.rightPosition += mPitchRatio;
 
-     if (m_sourceSamplePosition.rightPosition >= m_sourceData.length)
-         m_sourceSamplePosition.rightPosition -= m_sourceData.length;
+     if (mSourceSamplePosition.rightPosition >= mSourceData.length)
+         mSourceSamplePosition.rightPosition -= mSourceData.length;
 
-     if (m_sourceSamplePosition.leftPosition >= m_sourceData.length)
-         m_sourceSamplePosition.leftPosition -= m_sourceData.length;
+     if (mSourceSamplePosition.leftPosition >= mSourceData.length)
+         mSourceSamplePosition.leftPosition -= mSourceData.length;
     }
 
 
 // void GrainSource::processNextBlock(juce::AudioSampleBuffer& bufferToProcess, int startSample, int numSamples)
 // {
-//     juce::AudioSampleBuffer* data = m_sourceData.getAudioData();
+//     juce::AudioSampleBuffer* data = mSourceData.getAudioData();
 //     const float* const inL = data->getReadPointer (0);
 //     const float* const inR = data->getNumChannels() > 1 ? data->getReadPointer (1) : nullptr;
 
@@ -120,12 +120,12 @@ void GrainSource::getNextSample(float* outL, float* outR)
 //     float nextEnvelopeSample;
 //     while(--numSamples >= 0)
 //     {
-//         auto posLeft = (int) m_sourceSamplePosition.leftPosition;
-//         auto alphaLeft = (float) (m_sourceSamplePosition.leftPosition - posLeft);
+//         auto posLeft = (int) mSourceSamplePosition.leftPosition;
+//         auto alphaLeft = (float) (mSourceSamplePosition.leftPosition - posLeft);
 //         auto invAlphaLeft = 1.f - alphaLeft;
 
-//         auto posRight = (int) m_sourceSamplePosition.rightPosition;
-//         auto alphaRight = (float) (m_sourceSamplePosition.rightPosition - posRight);
+//         auto posRight = (int) mSourceSamplePosition.rightPosition;
+//         auto alphaRight = (float) (mSourceSamplePosition.rightPosition - posRight);
 //         auto invAlphaRight = 1.f - alphaRight;
 
 //         // just using a very simple linear interpolation here..
@@ -148,14 +148,14 @@ void GrainSource::getNextSample(float* outL, float* outR)
 //             *outL++ += (l + r) * 0.5f;
 //         }
 
-//         m_sourceSamplePosition.leftPosition += m_pitchRatio;
-//         m_sourceSamplePosition.rightPosition += m_pitchRatio;
+//         mSourceSamplePosition.leftPosition += mPitchRatio;
+//         mSourceSamplePosition.rightPosition += mPitchRatio;
 
-//         if (m_sourceSamplePosition.rightPosition >= m_sourceData.length)
-//             m_sourceSamplePosition.rightPosition -= m_sourceData.length;
+//         if (mSourceSamplePosition.rightPosition >= mSourceData.length)
+//             mSourceSamplePosition.rightPosition -= mSourceData.length;
 
-//         if (m_sourceSamplePosition.leftPosition >= m_sourceData.length)
-//             m_sourceSamplePosition.leftPosition -= m_sourceData.length;
+//         if (mSourceSamplePosition.leftPosition >= mSourceData.length)
+//             mSourceSamplePosition.leftPosition -= mSourceData.length;
 //     }
 // }
 

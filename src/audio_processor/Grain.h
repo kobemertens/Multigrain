@@ -5,6 +5,7 @@
 #pragma once
 
 #include <juce_audio_basics/juce_audio_basics.h>
+
 #include "MultigrainSound.h"
 #include "GrainPosition.h"
 /**
@@ -17,17 +18,17 @@ public:
     void init(unsigned int durationSamples, float grainAmplitude);
     float getNextSample();
 private:
-    float m_amplitude,
-          m_grainAmplitude,
-          m_amplitudeIncrement;
+    float mAmplitude;
+    float mGrainAmplitude;
+    float mAmplitudeIncrement;
 
-    unsigned int m_attackSamples,
-                 m_releaseSamples,
-                 m_currentSample;
+    std::size_t mAttackSamples;
+    std::size_t mReleaseSamples;
+    std::size_t mCurrentSample;
 };
 
 /**
- * Write samples from m_sourceData to buffer according to pitch ratio.
+ * Write samples from mSourceData to buffer according to pitch ratio.
  */
 class GrainSource // aka AudioSource
 {
@@ -38,9 +39,9 @@ public:
     void getNextSample(float* outL, float* outR);
 
 private:
-    double m_pitchRatio;
-    GrainPosition m_sourceSamplePosition;
-    const MultigrainSound& m_sourceData;
+    double mPitchRatio;
+    GrainPosition mSourceSamplePosition;
+    const MultigrainSound& mSourceData;
 };
 
 

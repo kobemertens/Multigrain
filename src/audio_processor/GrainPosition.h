@@ -5,7 +5,7 @@
 #pragma once
 
 /**
- * Represents the playback position of a grain in a buffer
+ * Represents the playback position of a grain in an audio sample
  */
 struct GrainPosition
 {

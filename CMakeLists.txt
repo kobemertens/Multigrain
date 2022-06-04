@@ -45,7 +45,7 @@ juce_add_plugin(${PROJECT_NAME}
     # ICON_BIG ...                              # ICON_* arguments specify a path to an image file to use as an icon for the Standalone
     # ICON_SMALL ...
     # COMPANY_NAME ...                          # Specify the name of the plugin's author
-    IS_SYNTH TRUE                       # Is this a synth or an effect?
+    IS_SYNTH TRUE                       # Is this a mSynth or an effect?
     NEEDS_MIDI_INPUT TRUE               # Does the plugin need midi input?
     NEEDS_MIDI_OUTPUT FALSE              # Does the plugin need midi output?
     IS_MIDI_EFFECT FALSE                 # Is this plugin a MIDI effect?
@@ -85,6 +85,7 @@ target_sources(${PROJECT_NAME}
         src/ui/source/GrainTabComponent.cpp
         src/ui/source/FxTabComponent.cpp
         src/ui/source/RandomizableSlider.cpp
+        src/ui/source/NoteSlider.cpp
     )
 
 # `target_compile_definitions` adds some preprocessor definitions to our target. In a Projucer
