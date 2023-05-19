@@ -72,7 +72,7 @@ void MainAudioThumbnailComponent::mouseExit(const juce::MouseEvent& event)
 void MainAudioThumbnailComponent::setCursorAtPoint(const juce::Point<int>& point)
 {
     auto x = point.getX();
-    processorRef.apvts.getParameter("Position")->setValue((float) x / (float) getWidth());
+    processorRef.apvts.getParameter("Position")->setValueNotifyingHost((float) x / (float) getWidth());
     repaint();
 }
 
