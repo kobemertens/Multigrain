@@ -1,6 +1,5 @@
 #include "../LookAndFeel.h"
 #include "../RotarySliderWithLabels.h"
-#include "BinaryData.h"
 
 void LookAndFeel::drawRotarySlider (juce::Graphics& g,
                                     int x, int y, int width, int height,
@@ -48,14 +47,4 @@ void LookAndFeel::drawRotarySlider (juce::Graphics& g,
 
         g.fillPath(p);
     }
-}
-
-const juce::Font& LookAndFeel::getMonoFont()
-{
-    static juce::Font mono(juce::Font(juce::Typeface::createSystemTypefaceFor(
-        BinaryData::myfont_ttf,
-        BinaryData::myfont_ttfSize
-    )));
-
-    return mono;
 }

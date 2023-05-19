@@ -11,5 +11,4 @@ struct LookAndFeel : juce::LookAndFeel_V4
                            float rotaryEndAngle,
                            juce::Slider&) override;
 
-    static const juce::Font& getMonoFont();
 };

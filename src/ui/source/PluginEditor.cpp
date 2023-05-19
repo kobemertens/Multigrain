@@ -253,7 +253,6 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (MultigrainAudi
     masterGainSlider(*processorRef.apvts.getParameter("Master Gain"), "%"),
     masterGainSliderAttachment(processorRef.apvts, "Master Gain", masterGainSlider)
 {
-    LookAndFeel::getDefaultLookAndFeel().setDefaultSansSerifTypeface(lnf.getMonoFont().getTypefacePtr());
     for (auto* comp : getComps())
     {
         addAndMakeVisible(comp);
