@@ -41,10 +41,7 @@ void MultigrainVoice::startNote(int midiNoteNumber, float velocity, juce::Synthe
     {
         deactivateGrains();
 
-        auto theRootNoteNumber = static_cast<int>(*mRootNoteNumberParam);
-//        auto theNoteNumber = midiNoteNumber - 60 + theRootNoteNumber;
-
-        mPitchRatio = std::pow(2.0, (midiNoteNumber - theRootNoteNumber) / 12.0)
+        mPitchRatio = std::pow(2.0, (midiNoteNumber - (int) *mRootNoteNumberParam) / 12.0)
                       * sound->sourceSampleRate / getSampleRate();
 
         mCurrentNoteInHertz = juce::MidiMessage::getMidiNoteInHertz(midiNoteNumber);
