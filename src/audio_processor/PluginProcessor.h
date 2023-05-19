@@ -54,6 +54,8 @@ public:
 private:
     //==============================================================================
     SynthAudioSource synthAudioSource;
+    std::atomic<float>* masterGain;
+    std::atomic<float>* applyReverb;
     juce::Reverb reverb;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MultigrainAudioProcessor)

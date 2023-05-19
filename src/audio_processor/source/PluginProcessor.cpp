@@ -11,7 +11,9 @@ MultigrainAudioProcessor::MultigrainAudioProcessor()
                        .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
                      #endif
                        ),
-      synthAudioSource(keyboardState, apvts)
+      synthAudioSource(keyboardState, apvts),
+      masterGain(apvts.getRawParameterValue("Master Gain")),
+      applyReverb(apvts.getRawParameterValue("Reverb Toggle"))
 {
 }
 
@@ -142,16 +144,15 @@ void MultigrainAudioProcessor::processBlock(
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-    // TODO: Maybe create a single audiosourcechannelinfo and reuse it
     juce::AudioSourceChannelInfo ci (buffer);
     synthAudioSource.getNextAudioBlock(ci);
     float* outL = buffer.getWritePointer (0, 0);
     float* outR = buffer.getWritePointer (1, 0);
 
-    if (apvts.getParameter("Reverb Toggle")->getValue())
+    if (*applyReverb >= 0.5f)
         reverb.processStereo(outL, outR, buffer.getNumSamples());
 
-    buffer.applyGain(apvts.getParameter("Master Gain")->getValue());
+    buffer.applyGain(*masterGain);
 }
 
 //==============================================================================
