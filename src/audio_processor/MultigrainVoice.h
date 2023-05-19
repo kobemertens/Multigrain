@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <atomic>
 #include <juce_audio_basics/juce_audio_basics.h>
 #include <juce_audio_processors/juce_audio_processors.h>
 
@@ -49,8 +50,6 @@ private:
 
     //==========================================================================================
 
-    juce::AudioProcessorValueTreeState &mApvts;
-
     double mPitchRatio = 0;
     double mSourceSamplePosition = 0;
     double mGrainSpawnPosition;
@@ -62,6 +61,19 @@ private:
 
     unsigned int mSamplesTillNextOnset;
     unsigned int mNextGrainToActivateIndex;
+
+    std::atomic<float>* mRootNoteNumberParam;
+    std::atomic<float>* mPositionParam;
+    std::atomic<float>* mGrainDurationParam;
+    std::atomic<float>* mNumGrainsParam;
+    std::atomic<float>* mGrainSpeedParam;
+    std::atomic<float>* mPositionRandomParam;
+
+    std::atomic<float>* mAttackParam;
+    std::atomic<float>* mDecayParam;
+    std::atomic<float>* mSustainParam;
+    std::atomic<float>* mReleaseParam;
+
 
     juce::ADSR mAdsr;
 

@@ -9,11 +9,20 @@ MultigrainVoice::MultigrainVoice(
     juce::AudioProcessorValueTreeState& apvts, 
     MultigrainSound& sound
 ):
-        mApvts(apvts),
         mGrainSpawnPosition{0.},
         mCurrentNoteInHertz{440.},
         mSamplesTillNextOnset(0),
         mNextGrainToActivateIndex(0),
+        mRootNoteNumberParam(apvts.getRawParameterValue("Root Note")),
+        mPositionParam(apvts.getRawParameterValue("Position")),
+        mGrainDurationParam(apvts.getRawParameterValue("Grain Duration")),
+        mNumGrainsParam(apvts.getRawParameterValue("Num Grains")),
+        mGrainSpeedParam(apvts.getRawParameterValue("Grain Speed")),
+        mPositionRandomParam(apvts.getRawParameterValue("Position Random")),
+        mAttackParam(apvts.getRawParameterValue("Synth Attack")),
+        mDecayParam(apvts.getRawParameterValue("Synth Decay")),
+        mSustainParam(apvts.getRawParameterValue("Synth Sustain")),
+        mReleaseParam(apvts.getRawParameterValue("Synth Release")),
         mSound(sound)
 {
     // init grain array
@@ -32,7 +41,7 @@ void MultigrainVoice::startNote(int midiNoteNumber, float velocity, juce::Synthe
     {
         deactivateGrains();
 
-        auto theRootNoteNumber = static_cast<int>(mApvts.getRawParameterValue("Root Note")->load());
+        auto theRootNoteNumber = static_cast<int>(*mRootNoteNumberParam);
 //        auto theNoteNumber = midiNoteNumber - 60 + theRootNoteNumber;
 
         mPitchRatio = std::pow(2.0, (midiNoteNumber - theRootNoteNumber) / 12.0)
@@ -40,17 +49,17 @@ void MultigrainVoice::startNote(int midiNoteNumber, float velocity, juce::Synthe
 
         mCurrentNoteInHertz = juce::MidiMessage::getMidiNoteInHertz(midiNoteNumber);
         mSamplesTillNextOnset = 0;
-        mGrainSpawnPosition = mApvts.getParameter("Position")->getValue() * (float) sound->length;
+        mGrainSpawnPosition = static_cast<double>(*mPositionParam) * sound->length;
 
         mLGain = velocity;
         mRGain = velocity;
 
         mAdsr.setSampleRate(getSampleRate());
         juce::ADSR::Parameters params(
-                (float) mApvts.getRawParameterValue("Synth Attack")->load() / 1000.f,
-                (float) mApvts.getRawParameterValue("Synth Decay")->load() / 1000.f,
-                (float) mApvts.getRawParameterValue("Synth Sustain")->load() / 100.f,
-                (float) mApvts.getRawParameterValue("Synth Release")->load() / 1000.f
+            *mAttackParam / 1000.f,
+            *mDecayParam / 1000.f,
+            *mSustainParam / 100.f,
+            *mReleaseParam / 1000.f
         );
         mAdsr.setParameters(params);
         mAdsr.noteOn();
@@ -81,10 +90,8 @@ void MultigrainVoice::renderNextBlock(juce::AudioSampleBuffer& outputBuffer, int
 
     if (auto* playingSound = dynamic_cast<MultigrainSound*> (getCurrentlyPlayingSound().get()))
     {
-        auto grainDurationFactor = mApvts.getRawParameterValue("Grain Duration")->load();
-        int numGrains = (int) mApvts.getRawParameterValue("Num Grains")->load();
-
-        auto grainDurationSamples = getSampleRate() * grainDurationFactor / mCurrentNoteInHertz;
+        auto numGrains = (int) *mNumGrainsParam;
+        auto grainDurationSamples = getSampleRate() * *mGrainDurationParam / mCurrentNoteInHertz;
         auto samplesBetweenOnsets = (unsigned int) juce::roundToInt(grainDurationSamples/(float) numGrains);
 
         float* outL = outputBuffer.getWritePointer(0, startSample);
@@ -153,13 +160,13 @@ void MultigrainVoice::renderNextBlock(juce::AudioSampleBuffer& outputBuffer, int
 
 void MultigrainVoice::updateGrainSpawnPosition(unsigned int samplesBetweenOnsets)
 {
-    mGrainSpawnPosition += (float) samplesBetweenOnsets * mApvts.getRawParameterValue("Grain Speed")->load();
+    mGrainSpawnPosition += (float) samplesBetweenOnsets * *mGrainSpeedParam;
     mGrainSpawnPosition = std::fmod(mGrainSpawnPosition, mSound.length);
 }
 
 GrainPosition MultigrainVoice::getNextGrainPosition()
 {
-    auto randomRange = mApvts.getParameter("Position Random")->getValue() * (float) mSound.length;
+    auto randomRange = *mPositionRandomParam * (float) mSound.length;
     auto randomDouble = mRandomGenerator.nextDouble();
     auto nextPosLeft = mGrainSpawnPosition + randomRange * randomDouble - randomRange / 2;
     randomDouble = mRandomGenerator.nextDouble();
