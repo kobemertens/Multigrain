@@ -47,6 +47,7 @@ private:
     void updateGrainSpawnPosition(unsigned int samplesBetweenOnsets);
     GrainPosition getNextGrainPosition();
     void deactivateGrains();
+    void killNote();
 
     //==========================================================================================
 

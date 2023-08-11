@@ -71,9 +71,15 @@ void MultigrainVoice::stopNote(float /*velocity*/, bool allowTailOff)
     }
     else
     {
-        clearCurrentNote();
-        mAdsr.reset();
+        killNote();
     }
+}
+
+void MultigrainVoice::killNote()
+{
+    clearCurrentNote();
+    mAdsr.reset();
+    deactivateGrains();
 }
 
 void MultigrainVoice::pitchWheelMoved(int) {}
@@ -130,7 +136,9 @@ void MultigrainVoice::renderNextBlock(juce::AudioSampleBuffer& outputBuffer, int
             mSamplesTillNextOnset--;
 
             if (!mAdsr.isActive())
-                clearCurrentNote();
+            {
+                killNote();
+            }
         }
 //        // Render all active mGrains
 //        for(Grain* grain : mGrains)
