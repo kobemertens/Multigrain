@@ -268,7 +268,7 @@ MultigrainAudioProcessor::createParameterLayout()
     theLayout.add(std::make_unique<juce::AudioParameterFloat>("Synth Release",
                                                          "Release",
                                                          juce::NormalisableRange<float>(0.f, 30000.f, 1.f, .2f),
-                                                         1000.f));
+                                                         25.f));
 
     theLayout.add(std::make_unique<juce::AudioParameterBool>("Reverb Toggle",
                                                           "Reverb Toggle",
