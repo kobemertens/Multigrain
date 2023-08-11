@@ -163,7 +163,7 @@ void MultigrainVoice::updateGrainSpawnPosition(unsigned int samplesBetweenOnsets
 
 GrainPosition MultigrainVoice::getNextGrainPosition()
 {
-    auto randomRange = *mPositionRandomParam * (float) mSound.length;
+    const auto randomRange = *mPositionRandomParam * (float) mSound.length;
     auto randomDouble = mRandomGenerator.nextDouble();
     auto nextPosLeft = mGrainSpawnPosition + randomRange * randomDouble - randomRange / 2;
     randomDouble = mRandomGenerator.nextDouble();
@@ -176,13 +176,18 @@ GrainPosition MultigrainVoice::getNextGrainPosition()
 Grain& MultigrainVoice::activateNextGrain(GrainPosition grainPosition, int grainDurationInSamples)
 {
     Grain* grain = mGrains[mNextGrainToActivateIndex];
-    // if (grain->isActive)
-    //     jassertfalse; // grain voicestealing is happening
+#if DEBUG
+    if (grain->isActive)
+    {
+        DBG("Grain voicestealing is happening!");
+        jassertfalse;
+    }
+#endif
     grain->activate(
-            grainDurationInSamples,
-            grainPosition,
-            mPitchRatio,
-            1.f // TODO allow randomization of this value
+        grainDurationInSamples,
+        grainPosition,
+        mPitchRatio,
+        1.f // TODO allow randomization of this value
     );
     mNextGrainToActivateIndex++;
     if (mNextGrainToActivateIndex == mGrains.size())
