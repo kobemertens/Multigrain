@@ -18,6 +18,8 @@ public:
     void prepareToPlay(int samplesPerBlockExpected, double sampleRate) override;
     void releaseResources() override;
     void getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill) override;
+    
+    std::vector<Silo*> getSilos();
 
     void init(MultigrainSound* sound);
 private:

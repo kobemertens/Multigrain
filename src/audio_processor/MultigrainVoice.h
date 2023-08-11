@@ -12,6 +12,8 @@
 #include "Grain.h"
 #include "GrainPosition.h"
 
+// Stores grains
+using Silo = juce::OwnedArray<Grain>;
 
 /**
  * Manages and schedules mGrains;
@@ -40,6 +42,8 @@ public:
         int startSample,
         int numSamples
     ) override;
+
+    Silo& getSilo();
 
 private:
     juce::Random mRandomGenerator;
@@ -78,7 +82,7 @@ private:
 
     juce::ADSR mAdsr;
 
-    juce::OwnedArray<Grain> mGrains;
+    Silo mGrains;
 
     MultigrainSound &mSound;
 

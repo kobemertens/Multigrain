@@ -30,6 +30,18 @@ void SynthAudioSource::getNextAudioBlock(
     mSynth.renderNextBlock(*bufferToFill.buffer, theMidiBuffer, bufferToFill.startSample, bufferToFill.numSamples);
 }
 
+std::vector<Silo*> SynthAudioSource::getSilos() 
+{
+    auto silos = std::vector<Silo*>();
+    for(int i = 0; i < this->mSynth.getNumVoices(); i++) 
+    {
+        auto voice = static_cast<MultigrainVoice*>(this->mSynth.getVoice(i));
+        silos.push_back(&voice->getSilo());
+    }
+
+    return silos;
+}
+
 void SynthAudioSource::init(MultigrainSound* sound)
 {
     // clear all previous sounds and voices

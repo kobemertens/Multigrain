@@ -163,6 +163,11 @@ void MultigrainVoice::renderNextBlock(juce::AudioSampleBuffer& outputBuffer, int
     }
 }
 
+Silo& MultigrainVoice::getSilo()
+{
+    return this->mGrains;
+}
+
 void MultigrainVoice::updateGrainSpawnPosition(unsigned int samplesBetweenOnsets)
 {
     mGrainSpawnPosition += (float) samplesBetweenOnsets * *mGrainSpeedParam;
