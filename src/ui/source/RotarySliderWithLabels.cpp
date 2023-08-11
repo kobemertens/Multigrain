@@ -32,7 +32,7 @@ void RotarySliderWithLabels::paint(juce::Graphics& g)
     auto radius = sliderBounds.getWidth() * 0.5f;
 
     auto textBoxBounds = getTextBoxBounds();
-    g.setColour(Colours::black);
+    g.setColour(Colours::white);
     g.setFont(getTextHeight());
     g.drawText(getDisplayString(), textBoxBounds, Justification::centred);
 
