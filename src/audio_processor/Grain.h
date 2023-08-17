@@ -17,8 +17,8 @@ public:
 //    void processNextBlock(juce::AudioSampleBuffer& bufferToProcess, int startSample, int numSamples);
     void init(unsigned int durationSamples, float grainAmplitude);
     float getNextSample();
-private:
     float mAmplitude;
+private:
     float mGrainAmplitude;
     float mAmplitudeIncrement;
 
@@ -37,6 +37,7 @@ public:
     // void processNextBlock(juce::AudioSampleBuffer& bufferToProcess, int startSample, int numSamples); // write information about pitch here
     void init(GrainPosition sourceSamplePosition, double pitchRatio);
     void getNextSample(float* outL, float* outR);
+    GrainPosition getRelativeGrainPosition() const;
 
 private:
     double mPitchRatio;
@@ -55,6 +56,8 @@ public:
     // void renderNextBlock(juce::AudioSampleBuffer& outputBuffer, int startSample, int numSamples);
     void activate(unsigned int durationSamples, GrainPosition sourcePosition, double pitchRatio, float grainAmplitude);
     void getNextSample(float* outL, float* outR);
+    GrainPosition getRelativeGrainPosition() const;
+    float getGrainAmplitude() const;
     bool isActive;
 private:
     GrainSource source;

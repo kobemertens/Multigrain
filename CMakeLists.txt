@@ -80,6 +80,7 @@ target_sources(${PROJECT_NAME}
 
         src/ui/source/AdsrComponent.cpp
         src/ui/source/DebugComponent.cpp
+        src/ui/source/GrainVisualizer.cpp
         src/ui/source/RotarySliderWithLabels.cpp
         src/ui/source/LookAndFeel.cpp
         src/ui/source/GrainTabComponent.cpp

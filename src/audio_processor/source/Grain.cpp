@@ -159,6 +159,14 @@ void GrainSource::getNextSample(float* outL, float* outR)
 //     }
 // }
 
+GrainPosition GrainSource::getRelativeGrainPosition() const
+{
+    return { 
+        .leftPosition = mSourceSamplePosition.leftPosition / mSourceData.length,
+        .rightPosition = mSourceSamplePosition.rightPosition / mSourceData.length
+    };
+}
+
 // Grain
 Grain::Grain(MultigrainSound &sound)
         : isActive(false),
@@ -209,3 +217,13 @@ void Grain::getNextSample(float* outL, float* outR)
 //     if(samplesRemaining < 0)
 //         jassertfalse; // this should not happen
 // }
+
+GrainPosition Grain::getRelativeGrainPosition() const
+{
+    return source.getRelativeGrainPosition();
+}
+
+float Grain::getGrainAmplitude() const
+{
+    return envelope.mAmplitude;
+}

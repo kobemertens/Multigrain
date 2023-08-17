@@ -2,7 +2,8 @@
 #include "../PluginEditor.h"
 
 MainAudioThumbnailComponent::MainAudioThumbnailComponent(MultigrainAudioProcessor& processorRef, int sourceSamplesPerThumbnailSample, juce::AudioFormatManager& formatManager, juce::AudioThumbnailCache& cacheToUse)
-    : audioThumbnail(sourceSamplesPerThumbnailSample, formatManager, cacheToUse),
+    : grainVisualizer(processorRef),
+      audioThumbnail(sourceSamplesPerThumbnailSample, formatManager, cacheToUse),
       previewAudioThumbnailCache(1),
       previewAudioThumbnail(sourceSamplesPerThumbnailSample, formatManager, previewAudioThumbnailCache),
       formatManager(formatManager),
@@ -10,6 +11,8 @@ MainAudioThumbnailComponent::MainAudioThumbnailComponent(MultigrainAudioProcesso
 {
     audioThumbnail.addChangeListener(this);
     setMouseCursor(juce::MouseCursor::PointingHandCursor);
+
+    addAndMakeVisible(grainVisualizer);
 }
 
 MainAudioThumbnailComponent::~MainAudioThumbnailComponent()
@@ -25,6 +28,11 @@ void MainAudioThumbnailComponent::paint(juce::Graphics& g)
         paintIfNoFileLoaded(g, getLocalBounds());
     else
         paintIfFileLoaded(g, getLocalBounds());
+}
+
+void MainAudioThumbnailComponent::resized()
+{
+    grainVisualizer.setBounds(getLocalBounds());
 }
 
 void MainAudioThumbnailComponent::parameterChanged (const juce::String &parameterID, float newValue)

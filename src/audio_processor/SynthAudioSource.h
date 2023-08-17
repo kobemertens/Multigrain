@@ -19,7 +19,7 @@ public:
     void releaseResources() override;
     void getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill) override;
     
-    std::vector<Silo*> getSilos();
+    std::vector<Silo*> getSilos() const;
     juce::Synthesiser mSynth;
 
     void init(MultigrainSound* sound);

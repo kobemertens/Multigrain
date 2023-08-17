@@ -4,13 +4,14 @@
 #include <juce_audio_utils/juce_audio_utils.h>
 
 #include "../audio_processor/PluginProcessor.h"
-#include "DebugComponent.h"
-#include "RotarySliderWithLabels.h"
-#include "NoteSlider.h"
 #include "AdsrComponent.h"
-#include "GrainTabComponent.h"
+#include "DebugComponent.h"
 #include "FxTabComponent.h"
+#include "GrainTabComponent.h"
+#include "GrainVisualizer.h"
 #include "LookAndFeel.h"
+#include "NoteSlider.h"
+#include "RotarySliderWithLabels.h"
 
 class MainAudioThumbnailComponent : public juce::Component,
                                     public juce::AudioProcessorValueTreeState::Listener,
@@ -20,6 +21,7 @@ class MainAudioThumbnailComponent : public juce::Component,
 public:
     MainAudioThumbnailComponent(MultigrainAudioProcessor& processorRef, int sourceSamplesPerThumbnailSample, juce::AudioFormatManager& formatManager, juce::AudioThumbnailCache& cacheToUse);
     ~MainAudioThumbnailComponent();
+    void resized() override;
     void paint(juce::Graphics& g) override;
     void parameterChanged (const juce::String &parameterID, float newValue) override;
     void setSource(juce::InputSource* newSource);
@@ -42,6 +44,8 @@ private:
     void setCursorAtPoint(const juce::Point<int>& point);
     void openFileChooser();
     void setAudioSource(juce::File& file);
+
+    GrainVisualizer grainVisualizer;
     std::unique_ptr<juce::FileChooser> chooser;
     juce::AudioThumbnail audioThumbnail;
     juce::AudioThumbnailCache previewAudioThumbnailCache;

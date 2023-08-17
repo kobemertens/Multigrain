@@ -30,7 +30,7 @@ void SynthAudioSource::getNextAudioBlock(
     mSynth.renderNextBlock(*bufferToFill.buffer, theMidiBuffer, bufferToFill.startSample, bufferToFill.numSamples);
 }
 
-std::vector<Silo*> SynthAudioSource::getSilos() 
+std::vector<Silo*> SynthAudioSource::getSilos() const
 {
     auto silos = std::vector<Silo*>();
     for(int i = 0; i < this->mSynth.getNumVoices(); i++) 
