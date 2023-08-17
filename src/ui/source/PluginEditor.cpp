@@ -5,8 +5,8 @@ MainAudioThumbnailComponent::MainAudioThumbnailComponent(MultigrainAudioProcesso
     : audioThumbnail(sourceSamplesPerThumbnailSample, formatManager, cacheToUse),
       previewAudioThumbnailCache(1),
       previewAudioThumbnail(sourceSamplesPerThumbnailSample, formatManager, previewAudioThumbnailCache),
-      processorRef(processorRef),
-      formatManager(formatManager)
+      formatManager(formatManager),
+      processorRef(processorRef)
 {
     audioThumbnail.addChangeListener(this);
     setMouseCursor(juce::MouseCursor::PointingHandCursor);
@@ -252,6 +252,9 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (MultigrainAudi
     fxTabComponent(processorRef.apvts),
     masterGainSlider(*processorRef.apvts.getParameter("Master Gain"), "%"),
     masterGainSliderAttachment(processorRef.apvts, "Master Gain", masterGainSlider)
+#if DEBUG
+    , debugComponent(p)
+#endif
 {
     for (auto* comp : getComps())
     {
@@ -293,6 +296,11 @@ void AudioPluginAudioProcessorEditor::resized()
 {
     auto bounds = getLocalBounds();
 
+#if DEBUG
+    auto debugArea = bounds.removeFromTop(bounds.getHeight() * 0.25);
+    debugComponent.setBounds(debugArea);
+#endif
+
     waveformArea = bounds.removeFromTop(bounds.getHeight() * 0.25);
     auto generalSettings = bounds.removeFromTop(bounds.getHeight()*0.2);
     auto gainSliderArea = generalSettings.removeFromLeft(generalSettings.getWidth() * .5);
@@ -316,5 +324,8 @@ std::vector<juce::Component*> AudioPluginAudioProcessorEditor::getComps()
         &audioThumbnailComponent,
         &mainTabbedComponent,
         &masterGainSlider
+#if DEBUG
+        ,&debugComponent
+#endif
     };
 }

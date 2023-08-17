@@ -4,6 +4,7 @@
 #include <juce_audio_utils/juce_audio_utils.h>
 
 #include "../audio_processor/PluginProcessor.h"
+#include "DebugComponent.h"
 #include "RotarySliderWithLabels.h"
 #include "NoteSlider.h"
 #include "AdsrComponent.h"
@@ -71,6 +72,9 @@ private:
     // Components (dont forget to add to getComps!)
     // --------------------------------------------------------------
 
+#if DEBUG
+    DebugComponent debugComponent;
+#endif
     juce::MidiKeyboardComponent keyboardComponent;
     NoteSlider mRootNoteSlider;
     std::vector<juce::Component*> getComps();
