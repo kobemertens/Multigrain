@@ -20,12 +20,12 @@ public:
     void getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill) override;
     
     std::vector<Silo*> getSilos();
+    juce::Synthesiser mSynth;
 
     void init(MultigrainSound* sound);
 private:
     juce::MidiKeyboardState& mKeyboardState;
     juce::AudioProcessorValueTreeState& mApvts;
-    juce::Synthesiser mSynth;
 
     static int const kNumVoices = 16;
 

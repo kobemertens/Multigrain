@@ -15,7 +15,9 @@ public:
     void paint(juce::Graphics& g) override;
 private:
     void timerCallback() override;
+    juce::String generateDebugText();
 
-    int mGrainCount = 0;
+    size_t mGrainCount = 0;
+    size_t mActiveVoices = 0;
     MultigrainAudioProcessor& processorRef;
 };
