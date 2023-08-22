@@ -15,6 +15,8 @@ public:
     void paint(juce::Graphics& g) override;
 private:
     void timerCallback() override;
+    bool drawCircles = true;
+    juce::Random random;
 
     MultigrainAudioProcessor& processorRef;
 };

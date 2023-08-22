@@ -53,13 +53,18 @@ void GrainVisualizer::paint(juce::Graphics& g)
     g.drawRect(getLocalBounds());
     for (const auto silo: processorRef.getSynthAudioSource().getSilos())
     {
-        for (const auto grain : *silo)
+        for (int i = 0; i < silo->size(); i++)
         {
+            const auto grain = (*silo)[i];
             if (grain->isActive)
             {
                 const auto xPos = grain->getRelativeGrainPosition().leftPosition * bounds.getWidth();
                 const auto amplitude = grain->getGrainAmplitude();
-                g.drawLine(xPos, centreY - amplitude/2*height, xPos, centreY + amplitude/2*height, 2 + 3*amplitude);
+                if (!drawCircles) {
+                    g.drawLine(xPos, centreY - amplitude/2*height, xPos, centreY + amplitude/2*height, 2 + 3*amplitude);
+                } else {
+                    g.fillEllipse(xPos, height/8*i, 40.f*amplitude, 40.f*amplitude);
+                }
             }
         }
     }
