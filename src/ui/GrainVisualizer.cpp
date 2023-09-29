@@ -1,4 +1,4 @@
-#include "../GrainVisualizer.h"
+#include "./GrainVisualizer.h"
 #include "juce_core/system/juce_PlatformDefs.h"
 
 namespace

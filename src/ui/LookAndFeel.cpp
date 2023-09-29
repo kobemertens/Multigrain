@@ -1,5 +1,5 @@
-#include "../LookAndFeel.h"
-#include "../RotarySliderWithLabels.h"
+#include "./LookAndFeel.h"
+#include "./RotarySliderWithLabels.h"
 
 void LookAndFeel::drawRotarySlider (juce::Graphics& g,
                                     int x, int y, int width, int height,

@@ -1,5 +1,5 @@
-#include "../../audio_processor/PluginProcessor.h"
-#include "../PluginEditor.h"
+#include "../audio_processor/PluginProcessor.h"
+#include "./PluginEditor.h"
 
 MainAudioThumbnailComponent::MainAudioThumbnailComponent(MultigrainAudioProcessor& processorRef, int sourceSamplesPerThumbnailSample, juce::AudioFormatManager& formatManager, juce::AudioThumbnailCache& cacheToUse)
     : grainVisualizer(processorRef),

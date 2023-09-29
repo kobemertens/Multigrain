@@ -1,4 +1,4 @@
-#include "../GrainTabComponent.h"
+#include "./GrainTabComponent.h"
 
 GrainParamsComponent::GrainParamsComponent(APVTS& apvts)
     : apvts(apvts),

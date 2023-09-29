@@ -2,7 +2,7 @@
 // Created by kobe on 19/11/2021.
 //
 
-#include "../Grain.h"
+#include "./Grain.h"
 
 // GrainEnvelope
 void GrainEnvelope::init(unsigned int durationSamples, float grainAmplitude)

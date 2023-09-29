@@ -1,4 +1,4 @@
-#include "../FxTabComponent.h"
+#include "./FxTabComponent.h"
 
 FxTabComponent::FxTabComponent(APVTS& apvts)
     : apvts(apvts),

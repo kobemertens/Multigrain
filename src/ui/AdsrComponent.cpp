@@ -1,4 +1,4 @@
-#include "../AdsrComponent.h"
+#include "./AdsrComponent.h"
 
 AdsrComponent::AdsrComponent(MultigrainAudioProcessor& processorRef, Parameters parameters)
     : processorRef(processorRef),

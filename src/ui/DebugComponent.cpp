@@ -1,4 +1,4 @@
-#include "../DebugComponent.h"
+#include "./DebugComponent.h"
 
 namespace
 {

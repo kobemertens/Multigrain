@@ -2,7 +2,7 @@
 // Created by kobe on 19/11/2021.
 //
 
-#include "../MultigrainSound.h"
+#include "./MultigrainSound.h"
 
 
 // MultigrainSound

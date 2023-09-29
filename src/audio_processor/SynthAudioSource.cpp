@@ -1,4 +1,4 @@
-#include "../SynthAudioSource.h"
+#include "./SynthAudioSource.h"
 
 // SynthAudioSource
 SynthAudioSource::SynthAudioSource(

@@ -2,7 +2,7 @@
 // Created by kobem on 28/05/2022.
 //
 
-#include "../NoteSlider.h"
+#include "./NoteSlider.h"
 
 #include <utility>
 

@@ -2,7 +2,7 @@
 // Created by kobe on 19/11/2021.
 //
 
-#include "../MultigrainVoice.h"
+#include "./MultigrainVoice.h"
 
 // MultigrainVoice
 MultigrainVoice::MultigrainVoice(

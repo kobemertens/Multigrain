@@ -1,5 +1,5 @@
-#include "../PluginProcessor.h"
-#include "../../ui/PluginEditor.h"
+#include "./PluginProcessor.h"
+#include "../ui/PluginEditor.h"
 
 //==============================================================================
 MultigrainAudioProcessor::MultigrainAudioProcessor()

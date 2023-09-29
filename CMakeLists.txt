@@ -71,22 +71,22 @@ juce_add_plugin(${PROJECT_NAME}
 
 target_sources(${PROJECT_NAME}
     PRIVATE
-        src/ui/source/PluginEditor.cpp
-        src/audio_processor/source/PluginProcessor.cpp
-        src/audio_processor/source/SynthAudioSource.cpp
-        src/audio_processor/source/Grain.cpp
-        src/audio_processor/source/MultigrainSound.cpp
-        src/audio_processor/source/MultigrainVoice.cpp
+        src/ui/PluginEditor.cpp
+        src/audio_processor/PluginProcessor.cpp
+        src/audio_processor/SynthAudioSource.cpp
+        src/audio_processor/Grain.cpp
+        src/audio_processor/MultigrainSound.cpp
+        src/audio_processor/MultigrainVoice.cpp
 
-        src/ui/source/AdsrComponent.cpp
-        src/ui/source/DebugComponent.cpp
-        src/ui/source/GrainVisualizer.cpp
-        src/ui/source/RotarySliderWithLabels.cpp
-        src/ui/source/LookAndFeel.cpp
-        src/ui/source/GrainTabComponent.cpp
-        src/ui/source/FxTabComponent.cpp
-        src/ui/source/RandomizableSlider.cpp
-        src/ui/source/NoteSlider.cpp
+        src/ui/AdsrComponent.cpp
+        src/ui/DebugComponent.cpp
+        src/ui/GrainVisualizer.cpp
+        src/ui/RotarySliderWithLabels.cpp
+        src/ui/LookAndFeel.cpp
+        src/ui/GrainTabComponent.cpp
+        src/ui/FxTabComponent.cpp
+        src/ui/RandomizableSlider.cpp
+        src/ui/NoteSlider.cpp
     )
 
 # `target_compile_definitions` adds some preprocessor definitions to our target. In a Projucer

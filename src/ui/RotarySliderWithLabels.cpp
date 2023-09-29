@@ -1,4 +1,4 @@
-#include "../RotarySliderWithLabels.h"
+#include "./RotarySliderWithLabels.h"
 
 void RotarySliderWithLabels::paint(juce::Graphics& g)
 {
