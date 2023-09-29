@@ -71,22 +71,23 @@ juce_add_plugin(${PROJECT_NAME}
 
 target_sources(${PROJECT_NAME}
     PRIVATE
-        src/ui/PluginEditor.cpp
-        src/audio_processor/PluginProcessor.cpp
-        src/audio_processor/SynthAudioSource.cpp
         src/audio_processor/Grain.cpp
         src/audio_processor/MultigrainSound.cpp
         src/audio_processor/MultigrainVoice.cpp
+        src/audio_processor/PluginProcessor.cpp
+        src/audio_processor/SynthAudioSource.cpp
 
         src/ui/AdsrComponent.cpp
         src/ui/DebugComponent.cpp
-        src/ui/GrainVisualizer.cpp
-        src/ui/RotarySliderWithLabels.cpp
-        src/ui/LookAndFeel.cpp
-        src/ui/GrainTabComponent.cpp
         src/ui/FxTabComponent.cpp
-        src/ui/RandomizableSlider.cpp
+        src/ui/GrainTabComponent.cpp
+        src/ui/GrainVisualizer.cpp
+        src/ui/LookAndFeel.cpp
+        src/ui/NoteSelector.cpp
         src/ui/NoteSlider.cpp
+        src/ui/PluginEditor.cpp
+        src/ui/RandomizableSlider.cpp
+        src/ui/RotarySliderWithLabels.cpp
     )
 
 # `target_compile_definitions` adds some preprocessor definitions to our target. In a Projucer

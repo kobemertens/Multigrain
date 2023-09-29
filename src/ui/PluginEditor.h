@@ -12,6 +12,7 @@
 #include "LookAndFeel.h"
 #include "NoteSlider.h"
 #include "RotarySliderWithLabels.h"
+#include "NoteSelector.h"
 
 class MainAudioThumbnailComponent : public juce::Component,
                                     public juce::AudioProcessorValueTreeState::Listener,
@@ -101,6 +102,7 @@ private:
     juce::TabbedComponent mainTabbedComponent;
     AdsrComponent mainAdsrComponent;
     GrainParamsComponent grainParamsComponent;
+    NoteSelector noteSelector;
     FxTabComponent fxTabComponent;
     LookAndFeel lnf;
     RotarySliderWithLabels masterGainSlider;

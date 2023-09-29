@@ -321,6 +321,7 @@ void AudioPluginAudioProcessorEditor::resized()
     mainTabbedComponent.setBounds(tabbedComponentArea);
     masterGainSlider.setBounds(gainSliderArea);
     mRootNoteSlider.setBounds(rootNoteSliderArea);
+    noteSelector.setBounds(generalSettings);
 }
 
 std::vector<juce::Component*> AudioPluginAudioProcessorEditor::getComps()
@@ -331,7 +332,8 @@ std::vector<juce::Component*> AudioPluginAudioProcessorEditor::getComps()
         &mRootNoteSlider,
         &audioThumbnailComponent,
         &mainTabbedComponent,
-        &masterGainSlider
+        &masterGainSlider,
+        &noteSelector
 #if DEBUG
         ,&debugComponent
 #endif
